@@ -186,6 +186,7 @@ settings="\
   'queue_prdgen': ${QUEUE_PRDGEN}
   'partition_post': ${PARTITION_POST}
   'queue_post': ${QUEUE_POST}
+  'partition_hofx': ${PARTITION_HOFX}
 #
 # Workflow task names.
 #
@@ -231,6 +232,10 @@ settings="\
   'run': ${RUN}
   'jedi_envar_ioda': ${JEDI_ENVAR_IODA_TN}
   'ioda_prepbufr': ${IODA_PREPBUFR_TN}
+  'JEDI_lightning': ${JEDI_LIGHTNING_TN}
+  'HofX_lightning': ${HOFX_LIGHTNING_TN}
+  'JEDI_IC': ${JEDI_IC_TN}
+  'GLM_to_fv3jedi_lightning': ${GLM_TO_FV3JEDI_LIGHTNING_TN}
 #
 # Number of nodes to use for each task.
 #
@@ -266,6 +271,7 @@ settings="\
   'nnodes_run_jedienvar_ioda': ${NNODES_RUN_JEDIENVAR_IODA}
   'nnodes_run_ioda_prepbufr': ${NNODES_RUN_IODA_PREPBUFR}
   'nnodes_add_aerosol': ${NNODES_ADD_AEROSOL}
+  'nnodes_JEDI_lightning': ${NNODES_JEDI_LIGHTNING}
 #
 # Number of cores used for a task
 #
@@ -276,6 +282,10 @@ settings="\
   'native_run_analysis': ${NATIVE_RUN_ANALYSIS}
   'ncores_run_enkf': ${NCORES_RUN_ENKF}
   'native_run_enkf': ${NATIVE_RUN_ENKF}
+  'ncores_GLM_to_fv3jedi_lightning': ${NCORES_GLM_TO_FV3JEDI_LIGHTNING}
+  'ncores_JEDI_IC': ${NCORES_JEDI_IC}
+  'native_JEDI_IC': ${NATIVE_JEDI_IC}
+  'ncores_HofX_lightning': ${NCORES_HOFX_LIGHTNING}
 #
 # Number of logical processes per node for each task.  If running without
 # threading, this is equal to the number of MPI processes per node.
@@ -312,6 +322,10 @@ settings="\
   'ppn_run_jedienvar_ioda': ${PPN_RUN_JEDIENVAR_IODA}
   'ppn_run_ioda_prepbufr': ${PPN_RUN_IODA_PREPBUFR}
   'ppn_add_aerosol': ${PPN_ADD_AEROSOL}
+  'ppn_JEDI_lightning': ${PPN_JEDI_LIGHTNING}
+  'ppn_GLM_to_fv3jedi_lightning': ${PPN_GLM_TO_FV3JEDI_LIGHTNING}
+  'ppn_HofX_lightning': ${PPN_HOFX_LIGHTNING}
+  'ppn_JEDI_IC': ${PPN_JEDI_IC}
 #
   'tpp_make_ics': ${TPP_MAKE_ICS}
   'tpp_make_lbcs': ${TPP_MAKE_LBCS}
@@ -422,6 +436,10 @@ settings="\
   'maxtries_jedi_envar_ioda': ${MAXTRIES_JEDI_ENVAR_IODA}
   'maxtries_ioda_prepbufr': ${MAXTRIES_IODA_PREPBUFR}
   'maxtries_add_aerosol': ${MAXTRIES_ADD_AEROSOL}
+  'maxtries_GLM_to_fv3jedi_lightning': ${MAXTRIES_GLM_TO_FV3JEDI_LIGHTNING}
+  'maxtries_JEDI_lightning': ${MAXTRIES_JEDI_LIGHTNING}
+  'maxtries_HofX_lightning': ${MAXTRIES_HOFX_LIGHTNING}
+  'maxtries_JEDI_IC': ${MAXTRIES_JEDI_IC}
 #
 # Flags that determine whether to run the specific tasks.
 #
@@ -433,6 +451,11 @@ settings="\
 #
   'is_rtma':  ${IS_RTMA}
   'fg_rootdir': ${FG_ROOTDIR}
+#
+# Paths to executables and env for JEDI GLM
+#
+  'fv3jedi_bindir': ${FV3JEDI_BINDIR}
+  'jedi_modules': ${JEDI_MODULES}
 #
 # Number of physical cores per node for the current machine.
 #
@@ -556,6 +579,7 @@ settings="\
   'radar_ref_thinning': ${RADAR_REF_THINNING}
   'ensctrl_stmp': ${ENSCTRL_STMP}
   'use_rrfse_ens': ${USE_RRFSE_ENS}
+  'do_jedi_glm_da': ${DO_JEDI_GLM_DA}
 #
 # cycle start and end date
 #
@@ -768,6 +792,16 @@ path_resolved=$( readlink -m "$FIXsmokedust" )
 if [ ! -d "${path_resolved}" ]; then
   print_err_msg_exit "Missing link to FIXsmokedust
   FIXsmokedust = \"$FIXsmokedust\"
+  path_resolved = \"${path_resolved}\"
+  Please ensure that path_resolved is an existing directory and then rerun
+  the experiment generation script."
+fi
+# Resolve the target directory that the FIXjediglm symlink points to
+ln -fsn "$FIX_JEDIGLM" "$FIXjediglm"
+path_resolved=$( readlink -m "$FIXjediglm" )
+if [ ! -d "${path_resolved}" ]; then
+  print_err_msg_exit "Missing link to FIXjediglm
+  FIXjediglm = \"$FIXjediglm\"
   path_resolved = \"${path_resolved}\"
   Please ensure that path_resolved is an existing directory and then rerun
   the experiment generation script."

@@ -167,6 +167,7 @@ PARTITION_PRDGEN=""
 QUEUE_PRDGEN=""
 PARTITION_POST=""
 QUEUE_POST=""
+PARTITION_HOFX=""
 #
 #-----------------------------------------------------------------------
 #
@@ -1572,6 +1573,9 @@ IS_RTMA="FALSE"
 FG_ROOTDIR=""
 RTMA_OBS_FEED=""
 PYTHON_GRAPHICS_YML_FN="rrfs_subset.yml"
+
+FV3JEDI_BINDIR=""
+JEDI_MODULES=""
 #
 #-----------------------------------------------------------------------
 #
@@ -1691,6 +1695,7 @@ FIX_CRTM=""
 FIX_UPP_CRTM=""
 FIX_SMOKE_DUST=""
 FIX_BUFRSND=""
+FIX_JEDIGLM=""
 
 FNGLAC="global_glacier.2x2.grb"
 FNMXIC="global_maxice.2x2.grb"
@@ -1846,6 +1851,10 @@ JEDI_ENVAR_IODA_TN="jedi_envar_ioda"
 IODA_PREPBUFR_TN="ioda_prepbufr"
 PROCESS_GLMFED_TN="process_glmfed"
 ADD_AEROSOL_TN="add_aerosol"
+GLM_TO_FV3JEDI_LIGHTNING_TN="GLM_to_fv3jedi_lightning"
+JEDI_LIGHTNING_TN="JEDI_lightning"
+HOFX_LIGHTNING_TN="HofX_lightning"
+JEDI_IC_TN="JEDI_IC"
 #
 # Number of nodes.
 #
@@ -1881,6 +1890,8 @@ NNODES_SAVE_RESTART="1"
 NNODES_RUN_JEDIENVAR_IODA="1"
 NNODES_RUN_IODA_PREPBUFR="1"
 NNODES_ADD_AEROSOL="1"
+NNODES_JEDI_LIGHTNING="40"
+
 #
 # Number of cores.
 #
@@ -1890,6 +1901,10 @@ NCORES_RUN_ENKF="4"
 NATIVE_RUN_FCST="--cpus-per-task 2 --exclusive"
 NATIVE_RUN_ANALYSIS="--cpus-per-task 2 --exclusive"
 NATIVE_RUN_ENKF="--cpus-per-task 4 --exclusive"
+NCORES_GLM_TO_FV3JEDI_LIGHTNING="1"
+NCORES_HOFX_LIGHTNING="4"
+NCORES_JEDI_IC="4"
+NATIVE_JEDI_IC="--exclusive"
 #
 # Number of MPI processes per node.
 #
@@ -1925,6 +1940,10 @@ PPN_SAVE_RESTART="1"
 PPN_RUN_JEDIENVAR_IODA="1"
 PPN_RUN_IODA_PREPBUFR="1"
 PPN_ADD_AEROSOL="9"
+PPN_JEDI_LIGHTNING="10"
+PPN_GLM_TO_FV3JEDI_LIGHTNING="1"
+PPN_HOFX_LIGHTNING="1"
+PPN_JEDI_IC="1"
 #
 # Number of TPP for WCOSS2.
 #
@@ -2039,6 +2058,10 @@ MAXTRIES_SAVE_DA_OUTPUT="1"
 MAXTRIES_JEDI_ENVAR_IODA="1"
 MAXTRIES_IODA_PREPBUFR="1"
 MAXTRIES_ADD_AEROSOL="1"
+MAXTRIES_GLM_TO_FV3JEDI_LIGHTNING="1"
+MAXTRIES_JEDI_LIGHTNING="1"
+MAXTRIES_HOFX_LIGHTNING="1"
+MAXTRIES_JEDI_IC="1"
 #
 #-----------------------------------------------------------------------
 #
@@ -2270,6 +2293,7 @@ DO_ENS_BLENDING="FALSE"
 ENS_BLENDING_LENGTHSCALE="960" # (Lx) in kilometers
 BLEND="FALSE"
 USE_HOST_ENKF="TRUE"
+DO_JEDI_GLM_DA="FALSE"
 #
 #-----------------------------------------------------------------------
 #
@@ -2612,6 +2636,9 @@ DO_IODA_PREPBUFR="FALSE"
 # For the ensemble workflow: add flash_extent_density field to ensemble
 # member RESTART files so control member EnVar can use as BEC
 #
+# DO_JEDI_GLM_DA:
+# add 4 tasks to workflow for JEDI assimilation of GLM FED
+#
 #-----------------------------------------------------------------------
 #
 DO_NONVAR_CLDANAL="FALSE"
@@ -2620,6 +2647,7 @@ DO_NLDN_LGHT="FALSE"
 DO_GLM_FED_DA="FALSE"
 GLMFED_DATA_MODE="FULL"
 PREP_MODEL_FOR_FED="FALSE"
+DO_JEDI_GLM_DA="FALSE"
 DO_SMOKE_DUST="FALSE"
 EBB_DCYCLE="2"
 DO_PM_DA="FALSE"

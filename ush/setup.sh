@@ -513,6 +513,7 @@ optionList[29]=GLMFED_DATA_MODE
 optionList[30]=DO_IODA_PREPBUFR
 optionList[31]=EBB_DCYCLE
 optionList[32]=PREP_MODEL_FOR_FED
+optionList[33]=DO_JEDI_GLM_DA
 
 obs_number=${#optionList[@]}
 for (( i=0; i<${obs_number}; i++ ));
@@ -574,6 +575,7 @@ case $MACHINE in
     QUEUE_FCST=${QUEUE_FCST:-"batch"}
     QUEUE_PRDGEN=${QUEUE_PRDGEN:-"batch"}
     QUEUE_POST=${QUEUE_POST:-"batch"}
+    PARTITION_HOFX=${PARTITION_HOFX:-"bigmem"}
     ;;
 
   "ORION")
@@ -839,6 +841,7 @@ FIX_BUFRSND=${FIX_BUFRSND:-"${HOMErrfs}/fix/bufrsnd"}
 AIRCRAFT_REJECT=${AIRCRAFT_REJECT:-"${FIX_GSI}"}
 SFCOBS_USELIST=${SFCOBS_USELIST:-"${FIX_GSI}"}
 PARM_IODACONV=${PARM_IODACONV:-"${HOMErrfs}/parm/iodaconv"}
+JEDI_MODULES=${JEDI_MODULES:-"${HOMErrfs}/modulefiles"}
 
 case $MACHINE in
 
@@ -854,6 +857,9 @@ case $MACHINE in
     TOPO_DIR=${TOPO_DIR:-"/scratch1/NCEPDEV/nems/role.epic/UFS_SRW_data/develop/fix/fix_orog"}
     SFC_CLIMO_INPUT_DIR=${SFC_CLIMO_INPUT_DIR:-"/scratch1/NCEPDEV/nems/role.epic/UFS_SRW_data/develop/fix/fix_sfc_climo"}
     FIXLAM_NCO_BASEDIR=${FIXLAM_NCO_BASEDIR:-"/scratch1/NCEPDEV/nems/role.epic/UFS_SRW_data/develop/FV3LAM_pregen"}
+    FIX_JEDIGLM=${FIX_JEDIGLM:-"/scratch2/BMC/zrtrr/aback/amanda_fix"}
+    FV3JEDI_BINDIR=${FV3JEDI_BINDIR:-"/scratch2/BMC/zrtrr/bjallen/OUCAPS/build/bin"}
+    JEDI_MODULES=${JEDI_MODULES:-"/scratch2/BMC/zrtrr/bjallen/OUCAPS/modulefile.skylab6.rocky8-spack1.6.0"}
     ;;
 
   "ORION"|"HERCULES")
@@ -1318,6 +1324,7 @@ FIXuppcrtm="${EXPTDIR}/fix_upp_crtm"
 FIXsmokedust="${EXPTDIR}/fix_smoke_dust"
 FIXbufrsnd="${EXPTDIR}/fix_bufrsnd"
 SST_ROOT="${SST_ROOT}"
+FIXjediglm="${EXPTDIR}/fix_jedi_glm"
 
 CYCLE_BASEDIR="$STMP"
 check_for_preexist_dir_file "${CYCLE_BASEDIR}" "${PREEXISTING_DIR_METHOD}"
