@@ -5,6 +5,9 @@ import stat
 from rocoto_funcs.base import header_begin, header_entities, header_end, source, \
     wflow_begin, wflow_log, wflow_cycledefs, wflow_end
 from rocoto_funcs.smart_cycledefs import smart_cycledefs
+from rocoto_funcs.get_gefsr import get_gefsr
+from rocoto_funcs.remap_gefsr import remap_gefsr
+
 from rocoto_funcs.ungrib_ic import ungrib_ic
 from rocoto_funcs.ungrib_lbc import ungrib_lbc
 from rocoto_funcs.ic import ic
@@ -35,6 +38,7 @@ def setup_xml(HOMErrfs, expdir):
     machine = os.getenv('MACHINE').lower()
     do_deterministic = os.getenv('DO_DETERMINISTIC', 'true').upper()
     do_ensemble = os.getenv('DO_ENSEMBLE', 'false').upper()
+    do_reforecast = os.getenv('DO_REFORECAST', 'false').upper()
     #
     source(f"{HOMErrfs}/workflow/config_resources/config.{machine}")
     source(f"{HOMErrfs}/workflow/config_resources/config.meshdep")
@@ -95,9 +99,33 @@ def setup_xml(HOMErrfs, expdir):
 
 # ---------------------------------------------------------------------------
 # assemble tasks for an ensemble experiment
+        if do_reforecast == "TRUE":
+            get_gefsr(xmlFile, expdir, do_ensemble=True)
+            remap_gefsr(xmlFile, expdir, do_ensemble=True)
         if do_ensemble == "TRUE" and os.getenv("IC_ONLY", "FALSE").upper() == "TRUE":
             ungrib_ic(xmlFile, expdir, do_ensemble=True)
             ic(xmlFile, expdir, do_ensemble=True)
+        elif do_ensemble == "TRUE" and os.getenv("DO_REFORECAST","FALSE").upper()=="TRUE":
+            if os.getenv("DO_IODA", "FALSE").upper() == "TRUE":
+                ioda_bufr(xmlFile, expdir)
+            if os.getenv("DO_RADAR_REF", "FALSE").upper() == "TRUE":
+                ioda_mrms_refl(xmlFile, expdir)
+            ungrib_ic(xmlFile, expdir, do_ensemble=True)
+            ungrib_lbc(xmlFile, expdir, do_ensemble=True)
+            ic(xmlFile, expdir, do_ensemble=True)
+            lbc(xmlFile, expdir, do_ensemble=True)
+            prep_ic(xmlFile, expdir, do_ensemble=True)
+            prep_lbc(xmlFile, expdir, do_ensemble=True)
+            if os.getenv("DO_RECENTER", "FALSE").upper() == "TRUE":
+                recenter(xmlFile, expdir)
+            if os.getenv("DO_JEDI", "FALSE").upper() == "TRUE":
+                getkf(xmlFile, expdir, 'OBSERVER')
+                getkf(xmlFile, expdir, 'SOLVER')
+                getkf(xmlFile, expdir, 'POST')
+            fcst(xmlFile, expdir, do_ensemble=True)
+            save_fcst(xmlFile, expdir, do_ensemble=True)
+            mpassit(xmlFile, expdir, do_ensemble=True)
+            upp(xmlFile, expdir, do_ensemble=True)
         elif do_ensemble == "TRUE":
             if os.getenv("DO_IODA", "FALSE").upper() == "TRUE":
                 ioda_bufr(xmlFile, expdir)

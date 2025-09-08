@@ -1,0 +1,45 @@
+#!/bin/bash
+
+if [ ! ${EXT_INIT_TIME} ]; then
+  ${ECHO} "ERROR: EXT_INIT_TIME, \$EXT_INIT_TIME, is not defined"
+  exit 1
+fi
+if [ ! ${ENS_INDEX} ]; then
+  ${ECHO} "ERROR: ENS_INDEX, \$ENS_INDEX, is not defined"
+  exit 1
+fi
+if [ ! ${EXT_DIR} ]; then
+  ${ECHO} "ERROR: EXT_DIR, \$EXT_DIR, is not defined"
+  exit 1
+fi
+if [ ! ${LANDSFC_GRIB} ]; then
+  ${ECHO} "ERROR: LANDSFC_GRIB, \$LANDSFC_GRIB, is not defined"
+  exit 1
+fi
+if [ ! ${OFFSET} ]; then
+  ${ECHO} "ERROR: OFFSET, \$OFFSET, is not defined"
+  exit 1
+fi
+if [ ! ${FCST_LENGTH} ]; then
+  ${ECHO} "ERROR: FCST_LENGTH, \$FCST_LENGTH, is not defined"
+  exit 1
+fi
+if [ ! ${HOMErrfs} ]; then
+  ${ECHO} "ERROR: HOMErrfs, \$HOMErrfs, is not defined"
+  exit 1
+fi
+
+echo "Retrieving GEFS Reforecast files..."
+echo "EXT_INIT_TIME: "${EXT_INIT_TIME}
+echo "MEMBER: "${ENS_INDEX}
+echo "EXT_DIR: "${EXT_DIR}
+echo "OFFSET: "${OFFSET}
+echo "FCST_LENGTH: "${FCST_LENGTH}
+echo "HOMErrfs: "${HOMErrfs}
+
+INTERVAL="3"
+/usr/bin/python3 -u ${HOMErrfs}/scripts/exrrfs_get_gefsr.py $EXT_INIT_TIME $ENS_INDEX $EXT_DIR $LANDSFC_GRIB $OFFSET $FCST_LENGTH $INTERVAL
+
+echo "DONE"
+exit 0
+

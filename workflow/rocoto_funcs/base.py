@@ -220,7 +220,7 @@ class objTask:
             text = text + f'  <account>&ACCOUNT;</account>\n'
             text = text + f'  <queue>&QUEUE_DEFAULT;</queue>\n'
             if self.dcTaskRes["partition"] != "":
-                text = text + f'  <partition>&PARTITION;</partition>\n'
+                text = text + f'  <partition>{self.dcTaskRes["partition"]}</partition>\n'
         else:
             text = text + f'  <account>{self.dcTaskRes["account"]}</account>\n'
             text = text + f'  <queue>{self.dcTaskRes["queue"]}</queue>\n'
