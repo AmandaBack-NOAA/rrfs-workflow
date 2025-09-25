@@ -18,7 +18,7 @@ export DO_DETERMINISTIC=false
 export ENS_SIZE=5
 export ZETA_LEVELS="L60.txt"
 export DO_REFORECAST=true
-export DEGREES="50"
+export DEGREES="25"
 #
 export DO_IODA=false
 export DO_JEDI=false
@@ -30,7 +30,7 @@ export RADARREFL_TIMELEVEL="00"  # 00 15 30 45 min
 
 export DO_CYC=true
 export CYC_INTERVAL=24
-for i in {0..23..1}; do arr[$i]="48"; done # 24hr fcst every production cycle
+for i in {0..23..1}; do arr[$i]="48"; done # 48hr fcst every production cycle
 export FCST_LEN_HRS_CYCLES="${arr[*]}"
 export HISTORY_INTERVAL=1
 export MPASSIT_GROUP_TOTAL_NUM=2
@@ -81,7 +81,8 @@ export LBC_EXTRN_MDL_NAME_PATTERN=${IC_EXTRN_MDL_NAME_PATTERN}
 export LBC_EXTRN_MDL_NAME_PATTERN_B=${IC_EXTRN_MDL_NAME_PATTERN_B}
 case ${MACHINE} in
   "hera")
-    export IC_EXTRN_MDL_BASEDIR="/scratch4/BMC/rtrr/RRFS2_RETRO_DATA/May2024/GEFS"
+    export GEFSR_BASEDIR="/space/where/you/can/write/GEFSR"
+    export IC_EXTRN_MDL_BASEDIR="${GEFSR_BASEDIR}_remapped${DEGREES}"
     export LBC_EXTRN_MDL_BASEDIR=${IC_EXTRN_MDL_BASEDIR}
     export OBSPATH="/scratch4/BMC/rtrr/RRFS2_RETRO_DATA/May2024/obs_rap"
     export OBSPATH_NSSLMOSIAC="/scratch4/BMC/rtrr/RRFS2_RETRO_DATA/May2024/reflectivity"
@@ -90,7 +91,8 @@ case ${MACHINE} in
     export PARTITION="hera"
     ;;
   "ursa")
-    export IC_EXTRN_MDL_BASEDIR="/scratch4/BMC/rtrr/RRFS2_RETRO_DATA/May2024/GFS"
+    export GEFSR_BASEDIR="/space/where/you/can/write/GEFSR"
+    export IC_EXTRN_MDL_BASEDIR="${GEFSR_BASEDIR}_remapped${DEGREES}"
     export LBC_EXTRN_MDL_BASEDIR=${IC_EXTRN_MDL_BASEDIR}
     export OBSPATH="/scratch4/BMC/rtrr/RRFS2_RETRO_DATA/May2024/obs_rap"
     export OBSPATH_NSSLMOSIAC="/scratch4/BMC/rtrr/RRFS2_RETRO_DATA/May2024/reflectivity"
@@ -99,7 +101,8 @@ case ${MACHINE} in
     export PARTITION="u1-compute"
     ;;
   "jet")
-    export IC_EXTRN_MDL_BASEDIR="/lfs5/BMC/nrtrr/RRFS2_RETRO_DATA/May2024/GEFS"
+    export GEFSR_BASEDIR="/space/where/you/can/write/GEFSR"
+    export IC_EXTRN_MDL_BASEDIR="${GEFSR_BASEDIR}_remapped${DEGREES}"
     export LBC_EXTRN_MDL_BASEDIR=${IC_EXTRN_MDL_BASEDIR}
     export OBSPATH="/lfs5/BMC/nrtrr/RRFS2_RETRO_DATA/May2024/obs_rap"
     export OBSPATH_NSSLMOSIAC="/lfs5/BMC/nrtrr/RRFS2_RETRO_DATA/May2024/reflectivity"
@@ -108,7 +111,8 @@ case ${MACHINE} in
     export PARTITION="kjet"
     ;;
   "orion"|"hercules")
-    export IC_EXTRN_MDL_BASEDIR="/work2/noaa/wrfruc/RRFS2_RETRO_DATA/May2024/GEFS"
+    export GEFSR_BASEDIR="/space/where/you/can/write/GEFSR"
+    export IC_EXTRN_MDL_BASEDIR="${GEFSR_BASEDIR}_remapped${DEGREES}"
     export LBC_EXTRN_MDL_BASEDIR=${IC_EXTRN_MDL_BASEDIR}
     export OBSPATH="/work2/noaa/wrfruc/RRFS2_RETRO_DATA/May2024/obs_rap"
     export OBSPATH_NSSLMOSIAC="/work2/noaa/wrfruc/RRFS2_RETRO_DATA/May2024/reflectivity"
