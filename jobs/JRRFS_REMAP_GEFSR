@@ -1,0 +1,87 @@
+#!/bin/sh
+
+
+if [ ! ${EXT_INIT_TIME} ]; then
+  ${ECHO} "ERROR: EXT_INIT_TIME, \$EXT_INIT_TIME, is not defined"
+  exit 1
+fi
+if [ ! ${ENS_INDEX} ]; then
+  ${ECHO} "ERROR: MEMBER, \$ENS_INDEX, is not defined"
+  exit 1
+fi
+if [ ! ${EXT_DIR} ]; then
+  ${ECHO} "ERROR: EXT_DIR, \$EXT_DIR, is not defined"
+  exit 1
+fi
+if [ ! ${REMAP_DIR} ]; then
+  ${ECHO} "ERROR: REMAP_DIR, \$REMAP_DIR, is not defined"
+  exit 1
+fi
+if [ ! ${DEGREES} ]; then
+  ${ECHO} "ERROR: DEGREES, \$DEGREES, are not defined"
+  exit 1
+fi
+
+cd ${EXT_DIR}/${ENS_INDEX}
+echo "Working directory is ${EXT_DIR}/${ENS_INDEX}"
+mkdir -p ${REMAP_DIR}/${ENS_INDEX}
+
+
+ymd=`echo $EXT_INIT_TIME | cut -c 1-8`
+h=`echo $EXT_INIT_TIME | cut -c 9-10`
+y2=`echo $EXT_INIT_TIME | cut -c 3-4`
+jul=$(date -d "${ymd} ${h}:00" +%j)
+prefix=${y2}${jul}${h}
+tmp="tmp${prefix}"
+
+for fhrfile in ${prefix}*; do
+
+  if [[ -s ${REMAP_DIR}/${ENS_INDEX}/${fhrfile} ]]
+  then
+    echo "$fhrfile exists, skipping"
+  else
+    echo "Remapping "${fhrfile}
+
+    rm -f ${tmp}*grib2
+    wgrib2 ${fhrfile} -match "LAND" -GRIB ${tmp}land.grib2
+    wgrib2 ${fhrfile} -not "UGRD|VGRD" -GRIB ${tmp}.grib2
+  
+    for lev in 1000 975 950 925 900 850 800 700 600 500 400 300 250 200 150 100 70 50 30 20 10 5 3 2 1
+      do
+      wgrib2 ${fhrfile} -match "UGRD:${lev} mb|VGRD:${lev} mb" -submsg_uv ${tmp}2.grib2
+      cat ${tmp}.grib2 ${tmp}2.grib2 > ${tmp}3.grib2
+      mv ${tmp}3.grib2 ${tmp}.grib2
+      rm -f ${tmp}2.grib2
+    done
+  
+    wgrib2 ${fhrfile} -match "UGRD:10 m above|VGRD:10 m above" -submsg_uv ${tmp}2.grib2
+    cat ${tmp}.grib2 ${tmp}2.grib2 > ${tmp}3.grib2
+    mv ${tmp}3.grib2 ${tmp}.grib2
+    rm -f ${tmp}2.grib2
+
+    if [[ "${DEGREES}" == "50" ]]; then
+      wgrib2 ${tmp}.grib2 -set_bitmap 1 -set_grib_type c3 -new_grid_winds earth \
+             -new_grid_vectors "UGRD:VGRD"   \
+             -new_grid_interpolation bilinear \
+             -if "WEASD" -new_grid_interpolation budget -fi \
+             -new_grid latlon 0.000000:720:0.500000 90.000000:361:-0.500000 ${tmp}2.grib2
+    else
+      wgrib2 ${tmp}.grib2 -set_bitmap 1 -set_grib_type c3 -new_grid_winds earth \
+             -new_grid_vectors "UGRD:VGRD"   \
+             -new_grid_interpolation bilinear \
+             -if "WEASD" -new_grid_interpolation budget -fi \
+             -new_grid latlon 0.000000:1440:0.250000 90.000000:721:-0.250000 ${tmp}2.grib2
+    fi
+  
+    # Merge vector field records
+    wgrib2 ${tmp}2.grib2 -new_grid_vectors "UGRD:VGRD" -submsg_uv ${tmp}3.grib2
+    rm -f ${tmp}.grib2 ${tmp}2.grib2
+
+    wgrib2 -not "LAND" ${tmp}3.grib2 -GRIB ${tmp}4.grib2
+    cat ${tmp}4.grib2 ${tmp}land.grib2 > ${tmp}5.grib2
+
+    mv ${tmp}5.grib2 ${REMAP_DIR}/${ENS_INDEX}/${fhrfile}
+    rm -f ${tmp}*grib2
+  fi
+done
+

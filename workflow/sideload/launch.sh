@@ -50,6 +50,16 @@ case ${task_id} in
     fi
     export LD_LIBRARY_PATH=${HOMErrfs}/sorc/RDASApp/build/lib64:${LD_LIBRARY_PATH}
     ;;
+  get_gefsr)
+    module purge
+    module load "rrfs/${MACHINE}.intel"
+    module load wgrib2
+    ;;
+  remap_gefsr)
+    module purge
+    module load "rrfs/${MACHINE}.intel"
+    module load wgrib2
+    ;;
   ungrib)
     module purge
     module load "rrfs/${MACHINE}.${COMPILER}"

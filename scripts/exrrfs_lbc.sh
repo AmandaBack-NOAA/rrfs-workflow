@@ -41,6 +41,9 @@ elif  [[ "${prefix}" == "GFS" ]]; then
 elif  [[ "${prefix}" == "GEFS" ]]; then
   nfglevels=32
   nfgsoillevels=4
+elif  [[ "${prefix}" == "GEFSR" ]]; then
+  nfglevels=26
+  nfgsoillevels=4
 fi
 nsoillevels=${NSOIL_LEVELS}
 

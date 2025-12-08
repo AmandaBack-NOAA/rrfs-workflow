@@ -5,6 +5,8 @@ import stat
 from rocoto_funcs.base import header_begin, header_entities, header_end, \
     wflow_begin, wflow_log, wflow_cycledefs, wflow_end
 from rocoto_funcs.smart_cycledefs import smart_cycledefs
+from rocoto_funcs.get_gefsr import get_gefsr
+from rocoto_funcs.remap_gefsr import remap_gefsr
 from rocoto_funcs.ungrib_ic import ungrib_ic
 from rocoto_funcs.ungrib_lbc import ungrib_lbc
 from rocoto_funcs.ic import ic
@@ -40,6 +42,7 @@ def setup_xml(HOMErrfs, expdir):
     machine = os.getenv('MACHINE').lower()
     do_deterministic = os.getenv('DO_DETERMINISTIC', 'TRUE').upper()
     do_ensemble = os.getenv('DO_ENSEMBLE', 'FALSE').upper()
+    do_reforecast = os.getenv('DO_REFORECAST', 'false').upper()
     do_ensmean_post = os.getenv('DO_ENSMEAN_POST', 'FALSE').upper()
     do_chemistry = os.getenv('DO_CHEMISTRY', 'FALSE').upper()
     #
@@ -108,6 +111,9 @@ def setup_xml(HOMErrfs, expdir):
 
 # ---------------------------------------------------------------------------
 # assemble tasks for an ensemble experiment
+        if do_reforecast == "TRUE":
+            get_gefsr(xmlFile, expdir, do_ensemble=True)
+            remap_gefsr(xmlFile, expdir, do_ensemble=True)
         if do_ensemble == "TRUE" and os.getenv("IC_ONLY", "FALSE").upper() == "TRUE":
             ungrib_ic(xmlFile, expdir, do_ensemble=True)
             ic(xmlFile, expdir, do_ensemble=True)
