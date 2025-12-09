@@ -38,7 +38,7 @@ for fhr in ${history_all}; do
       if [[ -s ${diag_file} ]]; then
         break
       fi
-      sleep 60s
+      sleep 80s
     done
 
     if [[ -s ${diag_file} ]] && [[ -s ${history_file} ]]; then
