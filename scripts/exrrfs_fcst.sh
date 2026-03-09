@@ -24,7 +24,7 @@ if [[ -r "${UMBRELLA_PREP_IC_DATA}/init.nc" ]]; then
   do_DAcycling='false'
 else
   timestr=$(date -d "${CDATE:0:8} ${CDATE:8:2}" +%Y-%m-%d_%H.%M.%S)
-  ln -snf "${UMBRELLA_PREP_IC_DATA}/mpasout.nc" "mpasout.${timestr}.nc"
+  ln -snf "${UMBRELLA_PREP_IC_DATA}/mpasout.nc" "${UMBRELLA_FCST_DATA}/mpasout.${timestr}.nc"
   start_type='warm'
   do_DAcycling='true'
 fi
@@ -35,12 +35,12 @@ fi
 ln -snf "${UMBRELLA_PREP_LBC_DATA}"/lbc*.nc .
 
 ln -snf "${FIXrrfs}/physics/${PHYSICS_SUITE}"/* .
-ln -snf "${FIXrrfs}/meshes/${MESH_NAME}.ugwp_oro_data.nc" ./ugwp_oro_data.nc
+ln -snf "${FIXrrfs}/${MESH_NAME}/${MESH_NAME}.ugwp_oro_data.nc" ./ugwp_oro_data.nc
 zeta_levels=${EXPDIR}/config/ZETA_LEVELS.txt
 nlevel=$(wc -l < "${zeta_levels}")
-ln -snf "${FIXrrfs}/meshes/${MESH_NAME}.invariant.nc_L${nlevel}_${prefix}" ./invariant.nc
+ln -snf "${FIXrrfs}/${MESH_NAME}/${MESH_NAME}.invariant.nc_L${nlevel}_${prefix}" ./invariant.nc
 mkdir -p graphinfo stream_list
-ln -snf "${FIXrrfs}"/graphinfo/* graphinfo/
+ln -snf "${FIXrrfs}/${MESH_NAME}"/graphinfo/* graphinfo/
 ${cpreq} "${FIXrrfs}/stream_list/${PHYSICS_SUITE}"/* stream_list/
 
 # generate the namelist on the fly
@@ -55,7 +55,7 @@ pio_stride=${PPN}
 file_content=$(< "${PARMrrfs}/${physics_suite}/namelist.atmosphere") # read in all content
 eval "echo \"${file_content}\"" > namelist.atmosphere
 
-if [[ "${MESH_NAME}" == "conus12km" ]]; then
+if [[ "${FCST_CONVECTION_SCHEME^^}" == "TRUE" ]]; then
   sed -i -e "s/    config_physics_suite = 'hrrrv5'/\
     config_physics_suite = 'hrrrv5'\n\
     config_convection_scheme = 'cu_ntiedtke'\n\
@@ -89,11 +89,10 @@ for fhr in ${history_all}; do
   CDATEp=$( ${NDATE} "${fhr}" "${CDATE}" )
   timestr=$(date -d "${CDATEp:0:8} ${CDATEp:8:2}" +%Y-%m-%d_%H.%M.%S)
   if [[ "${DO_SPINUP:-FALSE}" != "TRUE" ]];  then
-    ln -snf "${DATA}/history.${timestr}.nc" "${UMBRELLA_FCST_DATA}"
-    ln -snf "${DATA}/diag.${timestr}.nc" "${UMBRELLA_FCST_DATA}"
-    ln -snf "${DATA}/log.atmosphere.0000.out" "${UMBRELLA_FCST_DATA}"
+    ln -snf "${UMBRELLA_FCST_DATA}/history.${timestr}.nc" "${DATA}"
+    ln -snf "${UMBRELLA_FCST_DATA}/diag.${timestr}.nc" "${DATA}"
     if [[ "${mpasout_interval,,}" != "none" ]]; then
-      ln -snf "${DATA}/mpasout.${timestr}.nc" "${UMBRELLA_FCST_DATA}"
+      ln -snf "${UMBRELLA_FCST_DATA}/mpasout.${timestr}.nc" "${DATA}"
     fi
   fi
 done
@@ -101,23 +100,50 @@ done
 # run the MPAS model
 source prep_step
 ${cpreq} "${EXECrrfs}"/atmosphere_model.x .
-${MPI_RUN_CMD} ./atmosphere_model.x 
+${MPI_RUN_CMD} ./atmosphere_model.x
 export err=$?
 err_chk
+#
+# saving log.atmosphere.0000.out
+#
+[ -f ./log.atmosphere.0000.out ] && cat ./log.atmosphere.0000.out
 #
 # double check status as sometimes atmosphere_model.x exit with 0 but there are still errors (log.atmosphere*err)
 #
 num_err_log=$(find ./log.atmosphere*.err 2>/dev/null | wc -l)
 if (( "${num_err_log}" > 0 )) ; then
   echo "FATAL ERROR: MPAS model run failed"
+  # saving err log info from the first err log file
+  for f in ./log.atmosphere*.err; do [ -s "$f" ] && echo "--- Saving err info from $f ---" && cat "$f" && break; done
   err_exit
 else
-  # spinup cycles copy mpasout and log file to com/ directly, don't need the save_fcst task
+  # spinup cycles copy f001 mpasout to com/ directly, don't need the save_for_next task
   if [[ "${DO_SPINUP:-FALSE}" == "TRUE" ]];  then
     CDATEp=$( ${NDATE} 1 "${CDATE}" )
     timestr=$(date -d "${CDATEp:0:8} ${CDATEp:8:2}" +%Y-%m-%d_%H.%M.%S)
-    ${cpreq} "${DATA}/mpasout.${timestr}.nc" "${COMOUT}/fcst_spinup/${WGF}${MEMDIR}"
-    ${cpreq} "${DATA}/log.atmosphere.0000.out" "${COMOUT}/fcst_spinup/${WGF}${MEMDIR}"
+    ${cpreq} "${UMBRELLA_FCST_DATA}/mpasout.${timestr}.nc" "${COMOUT}/fcst_spinup/${WGF}${MEMDIR}"
+    cp "${DATA}/log.atmosphere.0000.out" "${COMOUT}/fcst_spinup/${WGF}${MEMDIR}"
+    cp "${DATA}/namelist.atmosphere" "${COMOUT}/fcst_spinup/${WGF}${MEMDIR}"
+    cp "${DATA}/streams.atmosphere" "${COMOUT}/fcst_spinup/${WGF}${MEMDIR}"
+
+  else # prod cycles, cycling mpasout is copied by the save_for_next task so that next cycle can start much earlier; other mpasout files can be copied when fcst completes
+    ${cpreq} "${DATA}/log.atmosphere.0000.out" "${COMOUT}/fcst/${WGF}${MEMDIR}"
+    cp "${DATA}/namelist.atmosphere" "${COMOUT}/fcst/${WGF}${MEMDIR}"
+    cp "${DATA}/streams.atmosphere" "${COMOUT}/fcst/${WGF}${MEMDIR}"
+    if [[ "${mpasout_interval,,}" != "none"  ]] && [[ -n "${MPASOUT_SAVE2COM_HRS}" ]]; then  # copy mpasout based on the $MPASOUT_SAVE2COM_HRS setting
+      read -ra array <<< "${MPASOUT_SAVE2COM_HRS}"
+      # shellcheck disable=SC2068
+      for fhr in ${array[@]}; do
+        CDATEp=$( ${NDATE} "${fhr}" "${CDATE}" )
+        timestr=$(date -d "${CDATEp:0:8} ${CDATEp:8:2}" +%Y-%m-%d_%H.%M.%S)
+        mpasout_file=${UMBRELLA_FCST_DATA}/mpasout.${timestr}.nc
+        if [[ -s ${mpasout_file} ]]; then
+          ${cpreq} "${mpasout_file}" "${COMOUT}/fcst/${WGF}${MEMDIR}"
+        else
+          echo "WARNING: mpasout_file not found - ${mpasout_file}"
+        fi
+      done
+    fi
   fi
   exit 0
 fi

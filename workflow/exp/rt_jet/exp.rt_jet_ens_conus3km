@@ -32,8 +32,7 @@ for i in {0..23};    do arr[$i]="03"; done # 3hr fcst
 for i in {0..23..6}; do arr[$i]="03"; done # 3hr fcst every 6hrs
 export FCST_LEN_HRS_CYCLES="${arr[*]}"
 export HISTORY_INTERVAL=1
-export MPASSIT_GROUP_TOTAL_NUM=2
-export UPP_GROUP_TOTAL_NUM=2
+export POST_GROUP_TOT_NUM=2 # num of groups, the final group absorbs leftovers, the first group contains the extra f000h file
 
 export IC_OFFSET=30
 export LBC_OFFSET=6
@@ -55,7 +54,6 @@ export NODES_GETKF="<nodes>80:ppn=10</nodes>"
 export NODES_RECENTER="<nodes>2:ppn=16</nodes>"
 #
 export WALLTIME_FCST="2:00:00"
-export WALLTIME_SAVE_FCST="2:00:00"
 export WALLTIME_MPASSIT="2:00:00"
 export WALLTIME_UPP="2:00:00"
 export WALLTIME_GETKF="00:30:00"
@@ -67,8 +65,8 @@ export RETRO_TASKTHROTTLE=60
 #
 # set up IC, LBC sources and A/Q/P/R information
 export IC_EXTRN_MDL_NAME="GEFS"
-export IC_EXTRN_MDL_FILENAME_PATTERN="gefs.@Y@m@d/@H/atmos/pgrb2ap5/gep#gmem#.t@Hz.pgrb2a.0p50.ffHHH"
-export IC_EXTRN_MDL_FILENAME_PATTERN_B="gefs.@Y@m@d/@H/atmos/pgrb2bp5/gep#gmem#.t@Hz.pgrb2b.0p50.ffHHH"
+export IC_EXTRN_MDL_FILENAME_PATTERN="gefs.@Y@m@d/@H/atmos/pgrb2ap5/gep#gmem#.t@Hz.pgrb2a.0p50.f^HHH^"
+export IC_EXTRN_MDL_FILENAME_PATTERN_B="gefs.@Y@m@d/@H/atmos/pgrb2bp5/gep#gmem#.t@Hz.pgrb2b.0p50.f^HHH^"
 export LBC_EXTRN_MDL_NAME=${IC_EXTRN_MDL_NAME}
 export LBC_EXTRN_MDL_FILENAME_PATTERN=${IC_EXTRN_MDL_FILENAME_PATTERN}
 export LBC_EXTRN_MDL_FILENAME_PATTERN_B=${IC_EXTRN_MDL_FILENAME_PATTERN_B}

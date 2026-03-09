@@ -67,7 +67,6 @@ def header_entities(xmlFile, expdir):
     partition = os.getenv('PARTITION', 'hera')
     reservation = os.getenv('RESERVATION', '')
     mesh_name = os.getenv('MESH_NAME', 'na3km')
-    keepdata = os.getenv('KEEPDATA', 'YES').strip().upper()
     mpi_run_cmd = os.getenv('MPI_RUN_CMD', 'srun')
     wgf = os.getenv('WGF', 'det')
     cyc_interval = os.getenv('CYC_INTERVAL', '3')
@@ -138,7 +137,6 @@ def header_entities(xmlFile, expdir):
 <envar><name>NET</name><value>{net}</value></envar>
 <envar><name>RUN</name><value>{run}</value></envar>
 <envar><name>rrfs_ver</name><value>{rrfs_ver}</value></envar>
-<envar><name>KEEPDATA</name><value>{keepdata}</value></envar>
 <envar><name>MPI_RUN_CMD</name><value>{mpi_run_cmd}</value></envar>
 <envar><name>MESH_NAME</name><value>{mesh_name}</value></envar>
 <envar><name>WGF</name><value>{wgf}</value></envar>
@@ -192,7 +190,17 @@ def wflow_log(xmlFile, log_fpath):
 def wflow_cycledefs(xmlFile, dcCycledef):
     text = ""
     for key, value in dcCycledef.items():
-        text = text + f'\n  <cycledef group="{key}">{value}</cycledef>'
+        if isinstance(value, dict):  # a dictionary value containing "valid_hours" or "exclude_hours"
+            if "valid_hours" in value:
+                valid_hours = value["valid_hours"]
+                mycycledef = value["cycledef"]
+                text = text + f'\n  <cycledef group="{key}" valid_hours="{valid_hours}">{mycycledef}</cycledef>'
+            else:
+                exclude_hours = value["exclude_hours"]
+                mycycledef = value["cycledef"]
+                text = text + f'\n  <cycledef group="{key}" exclude_hours="{exclude_hours}">{mycycledef}</cycledef>'
+        else:
+            text = text + f'\n  <cycledef group="{key}">{value}</cycledef>'
     xmlFile.write(f'{text}\n')
 
 # objTask

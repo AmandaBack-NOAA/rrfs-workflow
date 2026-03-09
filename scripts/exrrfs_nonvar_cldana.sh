@@ -42,7 +42,7 @@ ln -snf "${UMBRELLA_PREP_IC_DATA}/${initial_file}" .
 # MPAS invariant file
 zeta_levels=${EXPDIR}/config/ZETA_LEVELS.txt
 nlevel=$(wc -l < "${zeta_levels}")
-ln -snf "${FIXrrfs}/meshes/${MESH_NAME}.invariant.nc_L${nlevel}_${prefix}" ./invariant.nc
+ln -snf "${FIXrrfs}/${MESH_NAME}/${MESH_NAME}.invariant.nc_L${nlevel}_${prefix}" ./invariant.nc
 
 # Processed observations
 ${cpreq} "${COMOUT}/nonvar_bufrobs/${WGF}/NASALaRC_cloud4mpas.bin" .
@@ -101,6 +101,10 @@ err_chk
 # No need to copy output b/c ${initial_file} was linked from UMBRELLA_PREP_IC_DATA
 
 # Copy log files to COM directory
-${cpreq} stdout_cloudanalysis* "${COMOUT}/nonvar_cldana/${WGF}/"
+if [[ "${DO_SPINUP:-FALSE}" == "TRUE" ]];  then
+  ${cpreq} stdout_cloudanalysis* "${COMOUT}/nonvar_cldana_spinup/${WGF}${MEMDIR}/"
+else
+  ${cpreq} stdout_cloudanalysis* "${COMOUT}/nonvar_cldana/${WGF}${MEMDIR}/"
+fi
 
 exit 0

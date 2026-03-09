@@ -5,6 +5,7 @@ import stat
 from rocoto_funcs.base import header_begin, header_entities, header_end, \
     wflow_begin, wflow_log, wflow_cycledefs, wflow_end
 from rocoto_funcs.smart_cycledefs import smart_cycledefs
+from rocoto_funcs.smart_post_groups import smart_post_groups
 from rocoto_funcs.ungrib_ic import ungrib_ic
 from rocoto_funcs.ungrib_lbc import ungrib_lbc
 from rocoto_funcs.ic import ic
@@ -13,7 +14,7 @@ from rocoto_funcs.prep_ic import prep_ic
 from rocoto_funcs.prep_lbc import prep_lbc
 from rocoto_funcs.jedivar import jedivar
 from rocoto_funcs.fcst import fcst
-from rocoto_funcs.save_fcst import save_fcst
+from rocoto_funcs.save_for_next import save_for_next
 from rocoto_funcs.getkf import getkf
 from rocoto_funcs.recenter import recenter
 from rocoto_funcs.ensmean import ensmean
@@ -29,6 +30,7 @@ from rocoto_funcs.prep_chem import prep_chem
 from rocoto_funcs.clean import clean
 from rocoto_funcs.graphics import graphics
 from rocoto_funcs.misc import misc
+from rocoto_funcs.hofx import hofx
 
 # setup_xml
 
@@ -45,6 +47,9 @@ def setup_xml(HOMErrfs, expdir):
     #
     # create cycledefs smartly
     dcCycledef = smart_cycledefs()
+    # create post groups smartly and update dcCycleDef accordingly
+    if os.getenv("DO_POST", "TRUE").upper() == "TRUE":
+        listPostGrpInfo = smart_post_groups(dcCycledef)
 
     fPath = f"{expdir}/rrfs.xml"
     with open(fPath, 'w') as xmlFile:
@@ -58,7 +63,10 @@ def setup_xml(HOMErrfs, expdir):
 
 # ---------------------------------------------------------------------------
 # assemble tasks for a deterministic experiment
-        if do_deterministic == "TRUE":
+        if do_deterministic == "TRUE" and os.getenv("IC_ONLY", "FALSE").upper() == "TRUE":
+            ungrib_ic(xmlFile, expdir)
+            ic(xmlFile, expdir)
+        elif do_deterministic == "TRUE":
             if os.getenv("DO_IODA", "FALSE").upper() == "TRUE":
                 if do_chemistry == "TRUE":
                     ioda_airnow(xmlFile, expdir)
@@ -71,9 +79,11 @@ def setup_xml(HOMErrfs, expdir):
             #
             if os.getenv("DO_IC_LBC", "TRUE").upper() == "TRUE":
                 ungrib_ic(xmlFile, expdir)
-                ungrib_lbc(xmlFile, expdir)
+                if "global" not in os.getenv("MESH_NAME"):
+                    ungrib_lbc(xmlFile, expdir)
                 ic(xmlFile, expdir)
-                lbc(xmlFile, expdir)
+                if "global" not in os.getenv("MESH_NAME"):
+                    lbc(xmlFile, expdir)
             #
             if os.getenv("DO_SPINUP", "FALSE").upper() == "TRUE":
                 prep_lbc(xmlFile, expdir)
@@ -89,10 +99,11 @@ def setup_xml(HOMErrfs, expdir):
                 if os.getenv("DO_NONVAR_CLOUD_ANA", "FALSE").upper() == "TRUE":
                     nonvar_cldana(xmlFile, expdir)
                 fcst(xmlFile, expdir)
-                save_fcst(xmlFile, expdir)
+                save_for_next(xmlFile, expdir)
             elif os.getenv("DO_FCST", "TRUE").upper() == "TRUE":
                 prep_ic(xmlFile, expdir)
-                prep_lbc(xmlFile, expdir)
+                if "global" not in os.getenv("MESH_NAME"):
+                    prep_lbc(xmlFile, expdir)
                 if do_chemistry == "TRUE":
                     prep_chem(xmlFile, expdir)
                 if os.getenv("DO_JEDI", "FALSE").upper() == "TRUE":
@@ -100,11 +111,15 @@ def setup_xml(HOMErrfs, expdir):
                 if os.getenv("DO_NONVAR_CLOUD_ANA", "FALSE").upper() == "TRUE":
                     nonvar_cldana(xmlFile, expdir)
                 fcst(xmlFile, expdir)
-                save_fcst(xmlFile, expdir)
+                if os.getenv('DO_CYC', 'FALSE').upper() == "TRUE":
+                    save_for_next(xmlFile, expdir)
             #
             if os.getenv("DO_POST", "TRUE").upper() == "TRUE":
-                mpassit(xmlFile, expdir)
-                upp(xmlFile, expdir)
+                for index, dcGrpInfo in enumerate(listPostGrpInfo):
+                    mpassit(xmlFile, expdir, index, dcGrpInfo)
+                    upp(xmlFile, expdir, index, dcGrpInfo)
+            if os.getenv("DO_HOFX", "FALSE").upper() == "TRUE":
+                hofx(xmlFile, expdir)
 
 # ---------------------------------------------------------------------------
 # assemble tasks for an ensemble experiment
@@ -118,26 +133,39 @@ def setup_xml(HOMErrfs, expdir):
                 ioda_bufr(xmlFile, expdir)
             if os.getenv("DO_RADAR_REF", "FALSE").upper() == "TRUE":
                 ioda_mrms_refl(xmlFile, expdir)
+            if os.getenv("DO_NONVAR_CLOUD_ANA", "FALSE").upper() == "TRUE":
+                nonvar_bufrobs(xmlFile, expdir)
+                nonvar_reflobs(xmlFile, expdir)
             ungrib_ic(xmlFile, expdir, do_ensemble=True)
-            ungrib_lbc(xmlFile, expdir, do_ensemble=True)
+            if "global" not in os.getenv("MESH_NAME"):
+                ungrib_lbc(xmlFile, expdir, do_ensemble=True)
             ic(xmlFile, expdir, do_ensemble=True)
-            lbc(xmlFile, expdir, do_ensemble=True)
+            if "global" not in os.getenv("MESH_NAME"):
+                lbc(xmlFile, expdir, do_ensemble=True)
             prep_ic(xmlFile, expdir, do_ensemble=True)
-            prep_lbc(xmlFile, expdir, do_ensemble=True)
+            if "global" not in os.getenv("MESH_NAME"):
+                prep_lbc(xmlFile, expdir, do_ensemble=True)
             if os.getenv("DO_RECENTER", "FALSE").upper() == "TRUE":
                 recenter(xmlFile, expdir)
             if os.getenv("DO_JEDI", "FALSE").upper() == "TRUE":
                 getkf(xmlFile, expdir, 'OBSERVER')
                 getkf(xmlFile, expdir, 'SOLVER')
-                getkf(xmlFile, expdir, 'POST')
+                if os.getenv("DO_GETKF_POST", "TRUE").upper() == "TRUE":
+                    getkf(xmlFile, expdir, 'POST')
+            if os.getenv("DO_NONVAR_CLOUD_ANA", "FALSE").upper() == "TRUE":
+                nonvar_cldana(xmlFile, expdir, do_ensemble=True)
             fcst(xmlFile, expdir, do_ensemble=True)
-            save_fcst(xmlFile, expdir, do_ensemble=True)
-            mpassit(xmlFile, expdir, do_ensemble=True)
-            upp(xmlFile, expdir, do_ensemble=True)
+            if os.getenv('DO_CYC', 'FALSE').upper() == "TRUE":
+                save_for_next(xmlFile, expdir, do_ensemble=True)
+            if os.getenv("DO_POST", "TRUE").upper() == "TRUE":
+                for index, dcGrpInfo in enumerate(listPostGrpInfo):
+                    mpassit(xmlFile, expdir, index, dcGrpInfo, do_ensemble=True)
+                    upp(xmlFile, expdir, index, dcGrpInfo, do_ensemble=True)
             if do_ensmean_post == "TRUE":
                 ensmean(xmlFile, expdir)
-                mpassit(xmlFile, expdir, do_ensemble=True, do_ensmean_post=True)
-                upp(xmlFile, expdir, do_ensemble=True, do_ensmean_post=True)
+                for index, dcGrpInfo in enumerate(listPostGrpInfo):
+                    mpassit(xmlFile, expdir, index, dcGrpInfo, do_ensemble=True, do_ensmean_post=True)
+                    upp(xmlFile, expdir, index, dcGrpInfo, do_ensemble=True, do_ensmean_post=True)
 
 # ---------------------------------------------------------------------------
         if os.getenv("DO_CLEAN", 'FALSE').upper() == "TRUE":  # write out the clean task if needed, usually for realtime runs
@@ -152,19 +180,30 @@ def setup_xml(HOMErrfs, expdir):
 
     fPath = f"{expdir}/run_rocoto.sh"
     extra = ""
-    if machine in ['orion', 'hercules']:
-        extra = "\nmodule load contrib"
+    if machine in ['orion']:
+        extra = "\nmodule use /work/noaa/zrtrr/gge/rocoto/modulefiles"
+    elif machine in ['hercules']:
+        extra = "\nmodule use /work/noaa/zrtrr/gge/hercules/rocoto/modulefiles"
     elif machine in ['gaeac6']:
-        extra = "\nmodule use /ncrc/proj/epic/rocoto/modulefiles"
+        extra = "\nmodule use /gpfs/f6/arfs-gsl/world-shared/gge/rocoto/modulefiles"
+    elif machine in ['ursa']:
+        extra = "\nmodule use /scratch4/BMC/zrtrr/gge/rocoto/modulefiles"
+    elif machine in ['hera']:
+        extra = "\nmodule use /scratch4/BMC/zrtrr/gge/rocoto_hera/modulefiles"
+    elif machine in ['jet']:
+        extra = "\nmodule use /lfs5/BMC/nrtrr/gge/rocoto/modulefiles"
     elif machine in ['wcoss2']:
         extra = "\nmodule use /apps/ops/test/nco/modulefiles/core"
     elif machine in ['derecho']:
-        extra = "\nsource /etc/profile.d/z00_modules.sh\nmodule use /glade/work/epicufsrt/contrib/derecho/modulefiles"
+        extra = "\nsource /etc/profile.d/z00_modules.sh\nmodule use /glade/work/geguo/rocoto/modulefiles"
     with open(fPath, 'w') as rocotoFile:
         text = \
             f'''#!/usr/bin/env bash
+## Example crontab entry (use "crontab -e" to modify crontab):
+## */5 * * * * {fPath}
+
 source /etc/profile{extra}
-module load rocoto
+module load rocoto/1.3.7g
 cd {expdir}
 rocotorun -w rrfs.xml -d rrfs.db
 '''

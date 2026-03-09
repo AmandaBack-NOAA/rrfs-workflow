@@ -32,9 +32,13 @@ def fcst(xmlFile, expdir, do_ensemble=False, do_spinup=False):
         'PHYSICS_SUITE': f'{physics_suite}',
         'FCST_LEN_HRS_CYCLES': f'{fcst_len_hrs_cycles}',
         'FCST_DT': os.getenv('FCST_DT', 'FCST_DT_not_defined'),
-        'FCST_SUBSteps': os.getenv('FCST_SUBSTEPS', 'FCST_SUBSTEPS_not_defined'),
+        'FCST_SUBSTEPS': os.getenv('FCST_SUBSTEPS', 'FCST_SUBSTEPS_not_defined'),
         'FCST_RADT': os.getenv('FCST_RADT', 'FCST_RADT_not_defined'),
     }
+    if os.getenv('FCST_CONVECTION_SCHEME', 'FALSE').upper() == 'TRUE':
+        dcTaskEnv['FCST_CONVECTION_SCHEME'] = "TRUE"
+    if os.getenv('MPASOUT_SAVE2COM_HRS', '') != '':
+        dcTaskEnv['MPASOUT_SAVE2COM_HRS'] = os.getenv('MPASOUT_SAVE2COM_HRS')
     if do_spinup:
         dcTaskEnv['DO_SPINUP'] = "TRUE"
 
@@ -82,29 +86,31 @@ def fcst(xmlFile, expdir, do_ensemble=False, do_spinup=False):
     recenterdep = ""
     if os.getenv("DO_NONVAR_CLOUD_ANA", "FALSE").upper() == "TRUE":
         if do_spinup:
-            cloudana_dep = f'\n<taskdep task="nonvar_cldana_spinup"/>'
+            cloudana_dep = f'\n    <taskdep task="nonvar_cldana_spinup"/>'
         else:
-            cloudana_dep = f'\n<taskdep task="nonvar_cldana"/>'
+            cloudana_dep = f'\n    <taskdep task="nonvar_cldana{ensindexstr}"/>'
     elif os.getenv("DO_JEDI", "FALSE").upper() == "TRUE":
         if os.getenv("DO_ENSEMBLE", "FALSE").upper() == "TRUE":
-            jedidep = f'\n<taskdep task="getkf_solver"/>'
+            jedidep = f'\n    <taskdep task="getkf_solver"/>'
         elif do_spinup:
-            jedidep = f'\n<taskdep task="jedivar_spinup"/>'
+            jedidep = f'\n    <taskdep task="jedivar_spinup"/>'
         else:
-            jedidep = f'\n<taskdep task="jedivar"/>'
+            jedidep = f'\n    <taskdep task="jedivar"/>'
     else:
         if os.getenv("DO_RECENTER", "FALSE").upper() == "TRUE":
             if os.getenv("DO_ENSEMBLE", "FALSE").upper() == "TRUE":
                 recenterdep = f'\n<taskdep task="recenter"/>'
 
-    prep_ic_dep = f'<taskdep task="prep_ic{ensindexstr}"/>'
+    prep_ic_dep = f'<taskdep task="prep_ic"/>'
     if do_spinup:
         prep_ic_dep = f'<taskdep task="prep_ic_spinup"/>'
+    prep_lbc_dep = f'\n    <taskdep task="prep_lbc{ensindexstr}" cycle_offset="0:00:00"/>'
+    if "global" in os.getenv("MESH_NAME"):
+        prep_lbc_dep = ''
 
     dependencies = f'''
   <dependency>
-  <and>{timedep}
-    <taskdep task="prep_lbc{ensindexstr}" cycle_offset="0:00:00"/>
+  <and>{timedep}{prep_lbc_dep}
     {prep_ic_dep}{jedidep}{chemdep}{cloudana_dep}{recenterdep}
   </and>
   </dependency>'''

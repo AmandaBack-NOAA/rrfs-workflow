@@ -26,18 +26,18 @@ fi
 # link fix files from physics, meshes, graphinfo, stream list, and jedi
 #
 ln -snf "${FIXrrfs}/physics/${PHYSICS_SUITE}"/*  .
-ln -snf "${FIXrrfs}/meshes/${MESH_NAME}.ugwp_oro_data.nc"  ./ugwp_oro_data.nc
+ln -snf "${FIXrrfs}/${MESH_NAME}/${MESH_NAME}.ugwp_oro_data.nc"  ./ugwp_oro_data.nc
 zeta_levels=${EXPDIR}/config/ZETA_LEVELS.txt
 nlevel=$(wc -l < "${zeta_levels}")
-ln -snf "${FIXrrfs}/meshes/${MESH_NAME}.invariant.nc_L${nlevel}_${prefix}"  ./invariant.nc
+ln -snf "${FIXrrfs}/${MESH_NAME}/${MESH_NAME}.invariant.nc_L${nlevel}_${prefix}"  ./invariant.nc
 mkdir -p graphinfo stream_list
-ln -snf "${FIXrrfs}"/graphinfo/*  graphinfo/
+ln -snf "${FIXrrfs}/${MESH_NAME}"/graphinfo/*  graphinfo/
 ${cpreq} "${FIXrrfs}/stream_list/${PHYSICS_SUITE}"/*  stream_list/
 ${cpreq} "${FIXrrfs}"/jedi/obsop_name_map.yaml .
 ${cpreq} "${FIXrrfs}"/jedi/keptvars.yaml .
 ${cpreq} "${FIXrrfs}"/jedi/geovars.yaml .
 # if cold_start or not do_radar_ref, remove refl10cm and w from stream_list.atmosphere.analysis
-if [[ "${start_type}" == "cold"  ]] || ! ${DO_RADAR_REF} ; then
+if [[ "${start_type}" == "cold"  ]] || [[ ${DO_RADAR_REF} == "FALSE" ]]; then
   sed -i '$d;N;$d' stream_list/stream_list.atmosphere.analysis
 fi
 #
@@ -48,7 +48,7 @@ mkdir -p obs ens satbias_in satbias_out
 #
 #  bump files and static BEC files
 #
-ln -snf "${FIXrrfs}/bumploc/${MESH_NAME}_L${nlevel}_${NTASKS}_401km11levels"  bumploc
+ln -snf "${FIXrrfs}/${MESH_NAME}/bumploc/${MESH_NAME}_L${nlevel}_${NTASKS}_401km11levels"  bumploc
 
 if [[ ${STATIC_BEC_MODEL} == "GSIBEC" ]]; then
   # gsibec
@@ -64,9 +64,9 @@ if [[ ${STATIC_BEC_MODEL} == "GSIBEC" ]]; then
 else
   # bump bec
   mkdir -p static_bec
-  ln -snf "${FIXrrfs}/static_bec/${MESH_NAME}_L${nlevel}/stddev.nc"  static_bec/stddev.nc
-  ln -snf "${FIXrrfs}/static_bec/${MESH_NAME}_L${nlevel}/nicas_${NTASKS}"  static_bec/nicas
-  ln -snf "${FIXrrfs}/static_bec/${MESH_NAME}_L${nlevel}/vbal_${NTASKS}"  static_bec/vbal
+  ln -snf "${FIXrrfs}/${MESH_NAME}/static_bec/${MESH_NAME}_L${nlevel}/stddev.nc"  static_bec/stddev.nc
+  ln -snf "${FIXrrfs}/${MESH_NAME}/static_bec/${MESH_NAME}_L${nlevel}/nicas_${NTASKS}"  static_bec/nicas
+  ln -snf "${FIXrrfs}/${MESH_NAME}/static_bec/${MESH_NAME}_L${nlevel}/vbal_${NTASKS}"  static_bec/vbal
   ${cpreq}  "${EXPDIR}/config/bec_bump.yaml" "${DATA}"/bec_bump.yaml
 fi
 
@@ -83,6 +83,20 @@ source "${USHrrfs}/copy_obs.sh" "jedivar"
 #  find ensemble forecasts based on user settings
 #
 source "${USHrrfs}/find_ensembles.sh"
+#
+# For HYB_ENS_TYPE=0, check number of ensemble files, if not enough, default to pure 3DVar
+#
+if (( HYB_ENS_TYPE == 0 )) ; then
+  ens_size=$(( 10#${ENS_SIZE} ))
+  ens_count=$(find ens -name "mem*.nc" | wc -l)
+  if (( ens_count < ens_size )); then
+     echo "Number of ensemble files is ${ens_count}, less than 30, default to 3DVar"
+     export HYB_WGT_ENS=0.0
+     export HYB_WGT_STATIC=1.0
+  else
+     echo "Found ${ens_count} ensemble files"
+  fi
+fi
 #
 #  link background
 #

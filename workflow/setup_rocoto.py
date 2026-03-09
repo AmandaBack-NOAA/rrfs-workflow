@@ -29,7 +29,7 @@ else:
     exit()
 
 # source the config cascase
-source(f"{HOMErrfs}/workflow/config_resources/config.{machine}")
+source(f"{HOMErrfs}/workflow/config_resources/config.machines")
 source(f"{HOMErrfs}/workflow/config_resources/config.meshdep")
 source(f"{HOMErrfs}/workflow/config_resources/config.base")
 if os.getenv('REALTIME', 'false').upper() == "TRUE":
@@ -48,10 +48,6 @@ if os.getenv("DO_NONVAR_CLOUD_ANA", "FALSE").upper() == "TRUE":
     mesh = os.getenv("MESH_NAME", "conus3km")
     if mesh not in ["conus3km", "south3.5km", "conus12km"]:
         print(f'{mesh} is not compatible with the nonvar cloud analysis')
-        print('Please set DO_NONVAR_CLOUD_ANA=false and try again')
-        exit()
-    if os.getenv("DO_ENSEMBLE", "FALSE").upper() == "TRUE":
-        print(f'Nonvar cloud analysis is not compatible with ensembles')
         print('Please set DO_NONVAR_CLOUD_ANA=false and try again')
         exit()
 
@@ -85,7 +81,7 @@ os.makedirs(exp_configdir, exist_ok=True)
 # copy the zeta_levels file if defined
 zeta_levels = os.getenv('ZETA_LEVELS', '')
 if zeta_levels != '':
-    shutil.copy(f'{HOMErrfs}/fix/meshes/{zeta_levels}', f'{exp_configdir}/ZETA_LEVELS.txt')
+    shutil.copy(f'{HOMErrfs}/fix/vert_levels/{zeta_levels}', f'{exp_configdir}/ZETA_LEVELS.txt')
 if os.getenv("DO_CHEMISTRY", "FALSE").upper() == "TRUE" and os.path.exists(f"{HOMErrfs}/workflow/config.chemistry"):
     shutil.copy(f'{HOMErrfs}/workflow/config.chemistry', f'{expdir}/config.chemistry')  # save a copy for reference
 if os.path.exists(f"{HOMErrfs}/workflow/config.override"):
@@ -107,6 +103,9 @@ if os.getenv("DO_JEDI", 'false').upper() == "TRUE":
     else:
         shutil.copy(f'{HOMErrfs}/parm/jedivar.yaml', f'{exp_configdir}/jedivar.yaml')
         shutil.copy(f'{HOMErrfs}/parm/bec_bump.yaml', f'{exp_configdir}/bec_bump.yaml')
+#
+if os.getenv('DO_HOFX', 'FALSE').upper() == "TRUE":
+    shutil.copy(f'{HOMErrfs}/parm/hofx.yaml', f'{exp_configdir}/hofx.yaml')
 
 # copyover the VERSION file
 shutil.copy(f'{HOMErrfs}/workflow/VERSION', f'{expdir}/VERSION')
