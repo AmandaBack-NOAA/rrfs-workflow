@@ -154,6 +154,8 @@ case ${MACHINE} in
     export MORE_XML_ENTITIES="true"
     export CLUSTER_GET_GEFSR="es"
     export PARTITION_GET_GEFSR="eslogin_c6"
+    export WALLTIME_FCST="4:30:00"
+    export WALLTIME_SAVE_FCST="4:30:00"
     ;;
   "wcoss2")
     export IC_EXTRN_MDL_BASEDIR="/lfs/h2/emc/lam/noscrub/RRFS2_RETRO_DATA/May2024/GEFS"
