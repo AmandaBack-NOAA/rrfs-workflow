@@ -69,10 +69,17 @@ history_interval=${HISTORY_INTERVAL:-1}
 diag_interval=${HISTORY_INTERVAL:-1}
 mpasout_interval=${MPASOUT_INTERVAL:-1}
 [[ ${restart_interval} =~ ^[0-9]+$ ]] && restart_interval="${restart_interval}:00:00"
+[[ ${history_interval} =~ ^[0-9]+$ ]] && history_interval="${history_interval}:00:00"
+[[ ${diag_interval} =~ ^[0-9]+$ ]] && diag_interval="${diag_interval}:00:00"
 [[ ${mpasout_interval} =~ ^[0-9]+$ ]] && mpasout_interval="${mpasout_interval}:00:00"
+if [[ "${MPASOUT_TIMELEVELS}" != "" ]]; then # prioritize MPASOUT_TIMELEVELS
+  mpasout_replacement="s|output_interval=\"@mpasout_interval@\"|output_timelevels=\"${MPASOUT_TIMELEVELS}\"|"
+else
+  mpasout_replacement="s/@mpasout_interval@/${mpasout_interval}/"
+fi
 sed -e "s/@restart_interval@/${restart_interval}/" -e "s/@history_interval@/${history_interval}/" \
     -e "s/@diag_interval@/${diag_interval}/" -e "s/@lbc_interval@/${lbc_interval}/" \
-    -e "s/@mpasout_interval@/${mpasout_interval}/" "${PARMrrfs}"/streams.atmosphere  > streams.atmosphere
+    -e "${mpasout_replacement}"  "${PARMrrfs}"/streams.atmosphere  > streams.atmosphere
 #
 if [[ "${mpasout_interval,,}" == "none" ]]; then  # remove the da_state stream for coldstart only forecasts
   sed -i '/<stream name="da_state"/,/<\/stream>/d' streams.atmosphere
@@ -83,17 +90,33 @@ if [[ "${DO_CHEMISTRY^^}" == "TRUE" ]]; then
   source "${USHrrfs}"/chem_fcst.sh
 fi
 #
-# prelink the forecast output files to umbrella
-history_all=$(seq 0 $((10#${history_interval})) $((10#${fcst_len_hrs_thiscyc} )) )
-for fhr in ${history_all}; do
+# prelink the history/diag files to umbrella
+if [[ "${history_interval,,}" != "none" ]]; then
+  history_all=$(seq 0 $((10#${history_interval%%:*})) $((10#${fcst_len_hrs_thiscyc} )) )
+  for fhr in ${history_all}; do
+    CDATEp=$( ${NDATE} "${fhr}" "${CDATE}" )
+    timestr=$(date -d "${CDATEp:0:8} ${CDATEp:8:2}" +%Y-%m-%d_%H.%M.%S)
+    if [[ "${DO_SPINUP:-FALSE}" != "TRUE" ]];  then
+      ln -snf "${UMBRELLA_FCST_DATA}/history.${timestr}.nc" "${DATA}/"
+      ln -snf "${UMBRELLA_FCST_DATA}/history.${timestr}.nc.done" "${DATA}/"
+      ln -snf "${UMBRELLA_FCST_DATA}/diag.${timestr}.nc" "${DATA}/"
+      ln -snf "${UMBRELLA_FCST_DATA}/diag.${timestr}.nc.done" "${DATA}/"
+    fi
+  done
+fi
+# prelink the mpasout files to umbrella
+if [[ "${MPASOUT_TIMELEVELS}" != "" ]]; then # prioritize MPASOUT_TIMELEVELS
+  read -ra mpasout_all <<< "${MPASOUT_TIMELEVELS}"
+elif [[ "${mpasout_interval,,}" != "none" ]]; then
+ read -ra mpasout_all <<< "$(seq 0 $((10#${mpasout_interval%%:*})) $((10#${fcst_len_hrs_thiscyc} )) | paste -sd ' ')"
+fi
+# shellcheck disable=SC2068
+for fhr in ${mpasout_all[@]}; do
   CDATEp=$( ${NDATE} "${fhr}" "${CDATE}" )
   timestr=$(date -d "${CDATEp:0:8} ${CDATEp:8:2}" +%Y-%m-%d_%H.%M.%S)
   if [[ "${DO_SPINUP:-FALSE}" != "TRUE" ]];  then
-    ln -snf "${UMBRELLA_FCST_DATA}/history.${timestr}.nc" "${DATA}"
-    ln -snf "${UMBRELLA_FCST_DATA}/diag.${timestr}.nc" "${DATA}"
-    if [[ "${mpasout_interval,,}" != "none" ]]; then
-      ln -snf "${UMBRELLA_FCST_DATA}/mpasout.${timestr}.nc" "${DATA}"
-    fi
+    ln -snf "${UMBRELLA_FCST_DATA}/mpasout.${timestr}.nc" "${DATA}/"
+    ln -snf "${UMBRELLA_FCST_DATA}/mpasout.${timestr}.nc.done" "${DATA}/"
   fi
 done
 

@@ -8,13 +8,13 @@ export WGF="det"   # working group function = "det", "enkf", "ens", "firewx"
 export EXP_NAME=MPAS_RAP
 export VERSION=$(cat ./VERSION)
 export TAG=mpas_rap
-export OPSROOT=/scratch4/BMC/rtrr/NCO_dirs/${EXP_NAME}
+export OPSROOT=/scratch3/BMC/rtwrfruc/RRFSv2X/NCO_dirs/${EXP_NAME}
 export EXPDIR=${OPSROOT}/exp/rrfs${WGF}
 export COMROOT=${OPSROOT}/com      # task input and output data as well as logs
 export DATAROOT=${OPSROOT}/stmp    # task workdirs ($DATA) which to be removed immediately upon task completion unless KEEPDATA=YES
 #
 export REALTIME=true
-export ZETA_LEVELS="L65.txt"
+export ZETA_LEVELS="L60.txt"
 #
 export DO_IODA=false
 export DO_JEDI=false
@@ -74,6 +74,7 @@ export RESERVATION="rrfsens"
 #
 export STARTTIME_UNGRIB_IC="00:00:01"
 export STARTTIME_IC="00:00:01"
+export WALLTIME_IC="0:15:00"
 export WALLTIME_FCST="0:15:00"
 export WALLTIME_MPASSIT="0:10:00"
 export WALLTIME_UPP="0:10:00"
@@ -89,7 +90,7 @@ export IC_EXTRN_MDL_NAME="RAP"
 export IC_EXTRN_MDL_FILENAME_PATTERN="@y@j@H000^HHH^"
 export LBC_EXTRN_MDL_NAME=${IC_EXTRN_MDL_NAME}
 export LBC_EXTRN_MDL_FILENAME_PATTERN=${IC_EXTRN_MDL_FILENAME_PATTERN}
-export IC_EXTRN_MDL_BASEDIR="/public/data/grib/ftp_rap_hyb/7/0/105/0_794802_32769"
+export IC_EXTRN_MDL_BASEDIR="/public/data/grids/rap/full/wrfnat/grib2"
 export LBC_EXTRN_MDL_BASEDIR=${IC_EXTRN_MDL_BASEDIR}
 export OBSPATH="/scratch4/BMC/rtrr/RRFS2_RETRO_DATA/May2024/obs_rap"
 export OBSPATH_NSSLMOSIAC="/scratch4/BMC/rtrr/RRFS2_RETRO_DATA/May2024/reflectivity"
@@ -97,7 +98,7 @@ export OBSPATH_AIRNOW="/scratch4/BMC/rtrr/RRFS2_RETRO_DATA/May2024/airnow"
 export QUEUE="batch"
 export PARTITION="u1-compute"
 
-export NODES_IC="<nodes>4:ppn=160</nodes>"
+export NODES_IC="<nodes>2:ppn=192</nodes>"
 export NODES_LBC="<nodes>10:ppn=160</nodes>"
 export NODES_FCST="<nodes>10:ppn=160</nodes>"
 export NODES_MPASSIT="<nodes>1:ppn=160</nodes>"
