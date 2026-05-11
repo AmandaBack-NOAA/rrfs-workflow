@@ -49,6 +49,7 @@ start_time=$(date -d "${CDATE:0:8} ${CDATE:8:2}" +%Y-%m-%d_%H:%M:%S)
 run_duration=${fcst_len_hrs_thiscyc:-1}:00:00
 physics_suite=${PHYSICS_SUITE:-'mesoscale_reference'}
 jedi_da="true" #true
+do_sppt=${DO_SPPT:-'.false.'}
 
 pio_num_iotasks=${NODES}
 pio_stride=${PPN}
