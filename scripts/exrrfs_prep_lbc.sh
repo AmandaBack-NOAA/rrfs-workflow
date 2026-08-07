@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC1091,SC2153,SC2154
-declare -rx PS4='+ $(basename ${BASH_SOURCE[0]:-${FUNCNAME[0]:-"Unknown"}})[${LINENO}]: '
+declare -rx PS4='+${SECONDS}s $(basename ${BASH_SOURCE[0]:-${FUNCNAME[0]:-"Unknown"}})[${LINENO}]: '
 set -x
 cpreq="ln -snf"
 cpreq=${cpreq:-cpreq}
@@ -21,7 +21,7 @@ CDATElbcend=$( ${NDATE} $((10#${fcst_len_hrs_thiscyc})) "${CDATE}")
 string_time=$(date -d "${CDATElbcend:0:8} ${CDATElbcend:8:2}" +%Y-%m-%d_%H.%M.%S)
 last_bdyfile="lbc.${string_time}.nc"
 n=0
-while [[ $n -le ${lbc_hrs} ]]; do
+while (( n <= lbc_hrs )); do
   CDATElbc=$(${NDATE} -$((10#${n})) "${CDATE}")
   YYYYMMDDlbc=${CDATElbc:0:8}
   HHlbc=${CDATElbc:8:2}
@@ -40,7 +40,7 @@ done
 
 fhr_all=$(seq 0 $((10#${lbc_interval})) $((10#${fcst_len_hrs_thiscyc} )) )
 
-if [ -r "${checkfile}" ]; then
+if [[ -s "${checkfile}" ]]; then
   for fhr in  ${fhr_all}; do
     CDATElbc=$(${NDATE} "${fhr}" "${CDATE}")
     string_time=$(date -d "${CDATElbc:0:8} ${CDATElbc:8:2}" +%Y-%m-%d_%H.%M.%S)

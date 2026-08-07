@@ -2,7 +2,7 @@
 # tweaks for non-NCO experiments
 # This script will NOT be needed by NCO
 # shellcheck disable=SC1090,SC1091,SC2154,SC2155
-declare -rx PS4='+ $(basename ${BASH_SOURCE[0]:-${FUNCNAME[0]:-"Unknown"}})[${LINENO}]: '
+declare -rx PS4='+${SECONDS}s $(basename ${BASH_SOURCE[0]:-${FUNCNAME[0]:-"Unknown"}})[${LINENO}]: '
 set -x
 #
 COMPILER=${COMPILER:-intel}
@@ -24,8 +24,14 @@ elif [[ -n "${PBS_NODEFILE}" ]]; then # PBS
     export STRIDE=$((128 / PPN))
     export MPI_RUN_CMD="mpiexec -n $NTASKS -ppn $PPN --cpu-bind core --depth $STRIDE --label --line-buffer"
   fi
-else
-  echo "Info: Not slurm nor PBS"
+else  # runs in an environment without a job scheduler
+  export NONSCHEDULER_JOBID=$(ps -o pgid= -p $$ | tr -d ' ')  # chid processes will send SIGTERM to this JOBID
+  cleanup() {
+    echo "Killing the current task and all child processes..."
+    pkill -P "${NONSCHEDULER_JOBID}"  # Kills all child processes of this script
+    exit 1
+  }
+  trap cleanup SIGINT SIGTERM
 fi
 #
 ulimit -s unlimited
@@ -41,7 +47,7 @@ if [[ ${MACHINE,,} == "ursa" ]]; then # special needs at ursa
   export I_MPI_ADJUST_GATHERV=2
   export I_MPI_ADJUST_SCATTER=2
   export I_MPI_ADJUST_SCATTERV=2
-  export I_MPI_COLL_INTRANODE=pt2pt
+#  export I_MPI_COLL_INTRANODE=pt2pt
 fi
 #
 echo "load rrfs-workflow modules by default"
@@ -121,6 +127,10 @@ case ${task_id} in
     module load "rrfs/${MACHINE}.${COMPILER}"
     module load nco
     ;;
+  prep_chem)
+    module purge
+    module load "chem-regrid/${MACHINE}.${COMPILER}"
+    ;;
   *)
     module purge
     module load "rrfs/${MACHINE}.${COMPILER}"
@@ -162,8 +172,25 @@ case ${task_id} in
       exit 0
     fi
     ;;
-  graphics|misc)
-    "${HOMErrfs}/workflow/sideload/${task_id}.sh"
+  pydamonitor)
+    module purge
+    set +x
+    source "${HOMErrfs}/workflow/sideload/pyDAmonitor/ush/load_pyDAmonitor.sh"
+    set -x
+    "${HOMErrfs}/workflow/sideload/pyDAmonitor/ush/drive.sh"
+    ;;
+  graphics)
+    set +x
+    source "${HOMErrfs}/workflow/tools/load_pygraf.sh"
+    set -x
+    "${HOMErrfs}/workflow/sideload/graphics.sh"
+    ;;
+  archive)
+    set +x
+    eval "${ARCHIVE_MODULE}"
+    module load python
+    set -x
+    "${HOMErrfs}/workflow/sideload/archive.sh"
     ;;
   *)
     "${HOMErrfs}/jobs/${COMMAND}"

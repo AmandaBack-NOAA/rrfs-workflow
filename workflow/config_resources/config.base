@@ -21,9 +21,27 @@ export KEEPDATA=${KEEPDATA:-"NO"}
 export MPI_RUN_CMD=${MPI_RUN_CMD:-"srun"}
 export USE_CONV_SAT_INFO=${USE_CONV_SAT_INFO:-true}
 export EMPTY_OBS_SPACE_ACTION=${EMPTY_OBS_SPACE_ACTION:-"skip output"}
-export MPASOUT_TIMELEVELS=${MPASOUT_TIMELEVELS:-"0 1"}
+export MPASOUT_TIMELEVELS=${MPASOUT_TIMELEVELS:-""}
 export MPASOUT_SAVE2COM_HRS=${MPASOUT_SAVE2COM_HRS:-""}  # cycling mpasout.nc is saved by the 'save_for_next' task; specify other mpasout hours if needed, e.g. "02 03", "24", "24 48"
 #export POST_GROUP_SPEC="0-10 11-20 21-30 31-36" # customized group specification; setting this variable will overwrite POST_GROUP_TOT_NUM
+export REGRID_RRFS_GRIB2=${REGRID_RRFS_GRIB2:-false}
+export LSM_SCHEME=${LSM_SCHEME:-"sf_ruc"}
+if [[ "${LSM_SCHEME}" == *noah* ]]; then  # sf_noah, sf_noahmp
+  export NSOIL_LEVELS=${NSOIL_LEVELS:-4}
+else # sf_ruc
+  export NSOIL_LEVELS=${NSOIL_LEVELS:-9}
+fi
+
+# required options if DO_RTMA
+if [[ "${DO_RTMA^^}" == "TRUE" ]]; then
+  export DO_CYC=true
+  export CYC_INTERVAL=1
+  export DO_IC_LBC=false
+  export DO_IODA=true
+  export DO_JEDI=true
+  export FCST_LEN_HRS_CYCLES="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"  # 24 zeros
+  export POST_GROUP_TOT_NUM=1
+fi
 
 # PREP_LBC_LOOK_BACK_HRS
 if ${REALTIME:-false}; then
@@ -39,11 +57,28 @@ if [[ "${HISTORY_INTERVAL,,}" == "none" ]]; then
   export DO_POST=false
 fi
 
+# Configure what satellite SIS to use in the radiance DA, choose from the following list:
+# abi_g16, abi_g18, ahi_himawari8, airs_aqua, amsr2_gcom-w1, amsre_aqua,
+# amsua_aqua, amsua_metop-a, amsua_metop-b, amsua_metop-c, amsua_n15, amsua_n18, amsua_n19, amsub_n17, atms_n20, atms_n21, atms_npp,
+# avhrr3_metop-a, avhrr3_metop-b, avhrr3_metop-c, avhrr3_n18, avhrr3_n19, cris-fsr_n20, cris-fsr_n21, cris-fsr_npp,
+# gmi_gpm, hirs3_n17, hirs4_metop-a, hirs4_metop-b, hirs4_n19, iasi_metop-a, iasi_metop-b, iasi_metop-c,
+# imgr_g11, imgr_g12, imgr_g13, imgr_g14, imgr_g15, mhs_metop-a, mhs_metop-b, mhs_metop-c, mhs_n18, mhs_n19, saphir_meghat,
+# seviri_m08, seviri_m09, seviri_m10, seviri_m11, ssmi_f15, ssmis_f16, ssmis_f17, ssmis_f18, ssmis_f19, ssmis_f20
+# sndrD1_g11, sndrD1_g12, sndrD1_g13, sndrD1_g14, sndrD1_g15, sndrD2_g11, sndrD2_g12, sndrD2_g13, sndrD2_g14, sndrD2_g15,
+# sndrD3_g11, sndrD3_g12, sndrD3_g13, sndrD3_g14, sndrD3_g15, sndrD4_g11, sndrD4_g12, sndrD4_g13, sndrD4_g14, sndrD4_g15,
+# tms_s02,
+#
+# Examples(note: please set it in the exp file instead of here):
+# sat_uselist="abi_g16,abi_g18,cris-fsr_n20,cris-fsr_n21"  # use ',' or ', ' to separate different SIS
+# # set it across multile lines:
+# sat_uselist="abi_g16,abi_g18, \
+# cris-fsr_n20,cris-fsr_n21"
+export SAT_USELIST=${SAT_USELIST:-''}
+
 # DO_CLEAN
 if ${DO_CLEAN:-false} && ! ${REALTIME:-false}; then
   export STMP_RETENTION_CYCS=${STMP_RETENTION_CYCS:-2}
   export COM_RETENTION_CYCS=${COM_RETENTION_CYCS:-2400}  # 100 days
-  export COM_LBC_RETENTION_CYCS=${COM_RETENTION_CYCS:-2400}
   export LOG_RETENTION_CYCS=${LOG_RETENTION_CYCS:-2400}
   export CHECK_IS_CYC_DONE=${CHECK_IS_CYC_DONE:-true}
   export STMP_KEPT_TASKS=${STMP_KEPT_TASKS:-""}  # eg. jedivar or jedivar,mpassit,upp
@@ -98,7 +133,7 @@ export WALLTIME_FCST=${WALLTIME_FCST:-"00:50:00"}
 if ${DO_ENSEMBLE:-false}; then
   export NODES_SAVE_FOR_NEXT=${NODES_SAVE_FOR_NEXT:-"<nodes>1:ppn=40</nodes>"}
 else
-  export NODES_SAVE_FOR_NEXT=${NODES_SAVE_FOR_NEXT:-"<nodes>1:ppn=1</nodes>"}
+  export NODES_SAVE_FOR_NEXT=${NODES_SAVE_FOR_NEXT:-"<nodes>1:ppn=10</nodes>"}
 fi
 export WALLTIME_SAVE_FOR_NEXT=${WALLTIME_SAVE_FOR_NEXT:-"00:50:00"}
 
@@ -116,10 +151,14 @@ export NODES_UPP=${NODES_UPP:-"<nodes>2:ppn=40</nodes>"}
 export WALLTIME_UPP=${WALLTIME_UPP:-"00:50:00"}
 export NATIVE_UPP=${NATIVE_UPP:-""}
 
+# archive
+export WALLTIME_ARCHIVE=${WALLTIME_ARCHIVE:-"8:00:00"}
+
 # graphics
-export NODES_GRAPHICS="<nodes>1:ppn=20</nodes>"
-export WALLTIME_GRAPHICS="04:00:00"
-export NATIVE_GRAPHICS="--exclusive"
+export NODES_GRAPHICS=${NODES_GRAPHICS:-"<nodes>1:ppn=20</nodes>"}
+export WALLTIME_GRAPHICS=${WALLTIME_GRAPHICS:-"02:00:00"}
+export GRAPHICS_TILES=${GRAPHICS_TILES:-"full NE NC NW SE SC SW EastCO"}  # "full NE NC NW SE SC SW EastCO"
+export GRAPHICS_ZIP=${GRAPHICS_ZIP:-false}
 
 # clean
 export ACCOUNT_CLEAN=${ACCOUNT_CLEAN:-$ACCOUNT}
@@ -127,5 +166,3 @@ export QUEUE_CLEAN=${QUEUE_CLEAN:-$QUEUE}
 export PARTITION_CLEAN=${PARTITION_CLEAN:-$PARTITION}
 export RESERVATION_CLEAN=${RESERVATION_CLEAN:-""}
 export NODES_CLEAN="<nodes>1:ppn=1</nodes>"
-# misc
-export NODES_MISC="<nodes>1:ppn=1</nodes>"

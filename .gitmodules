@@ -39,3 +39,12 @@
 	path = sorc/MPASBlend
 	url = https://github.com/RRFSx/mpas_blending.git
         ignore = all
+[submodule "workflow/sideload/pyDAmonitor"]
+	path = workflow/sideload/pyDAmonitor
+	url = https://github.com/pyDAmonitor/pyDAmonitor.git
+        ignore = all
+[submodule "sorc/chem-regrid-wrapper"]
+	path = sorc/chem-regrid-wrapper
+	url = https://github.com/RRFSx/regrid-wrapper.git
+	branch = main
+	ignore = all

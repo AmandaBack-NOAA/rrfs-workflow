@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC1091,SC2153,SC2154,SC2034
-declare -rx PS4='+ $(basename ${BASH_SOURCE[0]:-${FUNCNAME[0]:-"Unknown"}})[${LINENO}]: '
+declare -rx PS4='+${SECONDS}s $(basename ${BASH_SOURCE[0]:-${FUNCNAME[0]:-"Unknown"}})[${LINENO}]: '
 set -x
 cpreq=${cpreq:-cpreq}
 prefix=${EXTRN_MDL_SOURCE%_NCO} # remove the trailing '_NCO' if any
@@ -9,6 +9,7 @@ cd "${DATA}" || exit 1
 dt=${FCST_DT:-60}
 substeps=${FCST_SUBSTEPS:-2}
 radt=${FCST_RADT:-30}
+config_gfl_sub3d=${FCST_GFL_SUB3D:-0}
 #
 # find forecst length for this cycle
 #
@@ -20,12 +21,12 @@ echo "forecast length for this cycle is ${fcst_len_hrs_thiscyc}"
 #
 if [[ -r "${UMBRELLA_PREP_IC_DATA}/init.nc" ]]; then
   ln -snf "${UMBRELLA_PREP_IC_DATA}/init.nc" init.nc
-  start_type='cold'
+  START_TYPE='cold'
   do_DAcycling='false'
 else
   timestr=$(date -d "${CDATE:0:8} ${CDATE:8:2}" +%Y-%m-%d_%H.%M.%S)
   ln -snf "${UMBRELLA_PREP_IC_DATA}/mpasout.nc" "${UMBRELLA_FCST_DATA}/mpasout.${timestr}.nc"
-  start_type='warm'
+  START_TYPE='warm'
   do_DAcycling='true'
 fi
 
@@ -45,10 +46,12 @@ ${cpreq} "${FIXrrfs}/stream_list/${PHYSICS_SUITE}"/* stream_list/
 
 # generate the namelist on the fly
 # do_restart already defined in the above
-start_time=$(date -d "${CDATE:0:8} ${CDATE:8:2}" +%Y-%m-%d_%H:%M:%S) 
+start_time=$(date -d "${CDATE:0:8} ${CDATE:8:2}" +%Y-%m-%d_%H:%M:%S)
 run_duration=${fcst_len_hrs_thiscyc:-1}:00:00
 physics_suite=${PHYSICS_SUITE:-'mesoscale_reference'}
-jedi_da="true" #true
+lsm_scheme=${LSM_SCHEME:-'sf_ruc'}
+nsoillevels=${NSOIL_LEVELS:-9}
+jedi_da=true #true
 
 pio_num_iotasks=${NODES}
 pio_stride=${PPN}
@@ -66,7 +69,7 @@ fi
 lbc_interval=${LBC_INTERVAL:-3}
 restart_interval=${RESTART_INTERVAL:-none}
 history_interval=${HISTORY_INTERVAL:-1}
-diag_interval=${HISTORY_INTERVAL:-1}
+diag_interval=${DIAG_INTERVAL:-${HISTORY_INTERVAL:-1}}
 mpasout_interval=${MPASOUT_INTERVAL:-1}
 [[ ${restart_interval} =~ ^[0-9]+$ ]] && restart_interval="${restart_interval}:00:00"
 [[ ${history_interval} =~ ^[0-9]+$ ]] && history_interval="${history_interval}:00:00"
@@ -99,6 +102,15 @@ if [[ "${history_interval,,}" != "none" ]]; then
     if [[ "${DO_SPINUP:-FALSE}" != "TRUE" ]];  then
       ln -snf "${UMBRELLA_FCST_DATA}/history.${timestr}.nc" "${DATA}/"
       ln -snf "${UMBRELLA_FCST_DATA}/history.${timestr}.nc.done" "${DATA}/"
+    fi
+  done
+fi
+if [[ "${diag_interval,,}" != "none" ]]; then
+  diag_all=$(seq 0 $((10#${diag_interval%%:*})) $((10#${fcst_len_hrs_thiscyc} )) )
+  for fhr in ${diag_all}; do
+    CDATEp=$( ${NDATE} "${fhr}" "${CDATE}" )
+    timestr=$(date -d "${CDATEp:0:8} ${CDATEp:8:2}" +%Y-%m-%d_%H.%M.%S)
+    if [[ "${DO_SPINUP:-FALSE}" != "TRUE" ]];  then
       ln -snf "${UMBRELLA_FCST_DATA}/diag.${timestr}.nc" "${DATA}/"
       ln -snf "${UMBRELLA_FCST_DATA}/diag.${timestr}.nc.done" "${DATA}/"
     fi
@@ -108,16 +120,14 @@ fi
 if [[ "${MPASOUT_TIMELEVELS}" != "" ]]; then # prioritize MPASOUT_TIMELEVELS
   read -ra mpasout_all <<< "${MPASOUT_TIMELEVELS}"
 elif [[ "${mpasout_interval,,}" != "none" ]]; then
- read -ra mpasout_all <<< "$(seq 0 $((10#${mpasout_interval%%:*})) $((10#${fcst_len_hrs_thiscyc} )) | paste -sd ' ')"
+  read -ra mpasout_all <<< "$(seq 0 $((10#${mpasout_interval%%:*})) $((10#${fcst_len_hrs_thiscyc} )) | paste -sd ' ')"
 fi
 # shellcheck disable=SC2068
 for fhr in ${mpasout_all[@]}; do
   CDATEp=$( ${NDATE} "${fhr}" "${CDATE}" )
   timestr=$(date -d "${CDATEp:0:8} ${CDATEp:8:2}" +%Y-%m-%d_%H.%M.%S)
-  if [[ "${DO_SPINUP:-FALSE}" != "TRUE" ]];  then
-    ln -snf "${UMBRELLA_FCST_DATA}/mpasout.${timestr}.nc" "${DATA}/"
-    ln -snf "${UMBRELLA_FCST_DATA}/mpasout.${timestr}.nc.done" "${DATA}/"
-  fi
+  ln -snf "${UMBRELLA_FCST_DATA}/mpasout.${timestr}.nc" "${DATA}/"
+  ln -snf "${UMBRELLA_FCST_DATA}/mpasout.${timestr}.nc.done" "${DATA}/"
 done
 
 # run the MPAS model
@@ -129,7 +139,7 @@ err_chk
 #
 # saving log.atmosphere.0000.out
 #
-[ -f ./log.atmosphere.0000.out ] && cat ./log.atmosphere.0000.out
+[[ -s ./log.atmosphere.0000.out ]] && cat ./log.atmosphere.0000.out
 #
 # double check status as sometimes atmosphere_model.x exit with 0 but there are still errors (log.atmosphere*err)
 #
@@ -137,7 +147,7 @@ num_err_log=$(find ./log.atmosphere*.err 2>/dev/null | wc -l)
 if (( "${num_err_log}" > 0 )) ; then
   echo "FATAL ERROR: MPAS model run failed"
   # saving err log info from the first err log file
-  for f in ./log.atmosphere*.err; do [ -s "$f" ] && echo "--- Saving err info from $f ---" && cat "$f" && break; done
+  for f in ./log.atmosphere*.err; do [[ -s "${f}" ]] && echo "--- Saving err info from ${f} ---" && cat "${f}" && break; done
   err_exit
 else
   # spinup cycles copy f001 mpasout to com/ directly, don't need the save_for_next task

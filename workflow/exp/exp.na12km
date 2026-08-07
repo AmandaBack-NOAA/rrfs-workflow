@@ -11,9 +11,11 @@ export TAG=d12km
 export OPSROOT=/scratch3/BMC/wrfruc/gge/OPSROOT/${EXP_NAME}
 export EXPDIR=${OPSROOT}/exp/rrfs${WGF}
 export COMROOT=${OPSROOT}/com      # task input and output data as well as logs
-export DATAROOT=${OPSROOT}/stmp    # task workdirs ($DATA) which to be removed immediately upon task completion unless KEEPDATA=yes
+export DATAROOT=${OPSROOT}/stmp    # task workdirs ($DATA) which to be removed immediately upon task completion unless KEEPDATA=YES
 #
 export ZETA_LEVELS="L65.txt"
+#
+export USE_MERRA2=false  # false: default GOCART aerosol climatology; true: MERRA2 aerosol climatology
 #
 export DO_IODA=true
 export DO_JEDI=true
@@ -27,6 +29,7 @@ export HYB_ENS_TYPE=1      # 1.rrfs; 2.interpolated GEFS/GDAS; 0.TBD on the fly 
 export HYB_ENS_PATH=""     # if empty, the workflow will try to find ensembles automatically
 export DO_RADAR_REF=false  # does not work for 3DVar, only EnVar or GETKF
 export RADARREFL_TIMELEVEL="00"  # 00 15 30 45 min
+export SAT_USELIST=""  # check config.base on how to set up this variable
 export ENS_SIZE=30
 export ENS_BEC_LOOK_BACK_HRS=1  # define the hours going back for ensemble forecast files for the ensemble BEC
 export DO_HOFX=false
@@ -42,6 +45,7 @@ for i in {0..23};    do arr[$i]="03"; done # 3hr fcst
 for i in {0..23..6}; do arr[$i]="12"; done # 12hr fcst every 6hrs
 export FCST_LEN_HRS_CYCLES="${arr[*]}"
 export HISTORY_INTERVAL=1
+export MPASOUT_TIMELEVELS="0 1"
 export POST_GROUP_TOT_NUM=1 # num of groups, the final group absorbs leftovers, the first group contains the extra f000h file
 
 export IC_OFFSET=6
@@ -52,8 +56,7 @@ export LBC_UNGRIB_GROUP_TOTAL_NUM=1
 export LBC_GROUP_TOTAL_NUM=1
 
 export RETRO_PERIOD="2024050600-2024050623"
-export CYCLEDEF_IC_STEP_HRS=12  # do ic jobs every step hours
-export CYCLEDEF_LBC_STEP_HRS=12  # do lbc jobs every step hours
+export LBC_CYCS="00 12"  # evenly divide 24 hours, e.g., "00 12", "00 06 12 18", etc
 export COLDSTART_CYCS="00 12"   # cycles to cold start from external models
 #export DO_SPINUP=true
 #export PRODSWITCH_CYCS="06 18"  # cycles to PROD switch to the spun-up ICs
@@ -61,9 +64,18 @@ export COLDSTART_CYCS="00 12"   # cycles to cold start from external models
 # set as follows to start spinup at 03/15z
 #export DO_SPINUP=true
 #export IC_OFFSET=3
-#export CYCLEDEF_IC_STEP_HRS=12
 #export COLDSTART_CYCS="03 15"
 #export PRODSWITCH_CYCS="09 21"
+#
+#export DO_PYDAMONITOR=true
+#export DO_GRAPHICS=true
+#export GRAPHICS_TILES="full NE NC NW SE SC SW EastCO"
+#export DO_ARCHIVE=true
+#export ARCHIVE_INTERVAL=24  # run the archive task every several hours
+#export ARCHIVE_HPSSDIR="/5year/BMC/wrfruc/Guoqing.Ge/${EXP_NAME}"
+#export ARCHIVE_COM1_SPEC='{"include":"ioda*, jedivar, nonvar*, fcst, upp, pyDAmonitor, graphics", "exclude":""}'  # use " inside and ' outside
+#export ARCHIVE_STMP=''  # eg. 'fcst,mpassit'  # archive files under the given task umbrella directories
+#export ARCHIVE_STMP_INTERVAL='12'  # ARCHIVE_STMP_INTERVAL must divide ARCHIVE_INTERVAL evenly
 #
 export NODES_IC="<nodes>1:ppn=40</nodes>"
 export NODES_LBC="<nodes>1:ppn=40</nodes>"
@@ -78,7 +90,7 @@ export WALLTIME_MPASSIT="1:00:00"
 export WALLTIME_UPP="1:00:00"
 export WALLTIME_JEDIVAR="00:30:00"
 #
-export KEEPDATA=NO
+export KEEPDATA=YES
 #
 # local.setup: setup some local options specific to a platform or an experiment
 #
@@ -116,16 +128,6 @@ case ${MACHINE} in
     export NODES_UPP="<nodes>1:ppn=80</nodes>"
     export NODES_JEDIVAR="<nodes>5:ppn=80</nodes>"
     export NODES_IODA_MRMS_REFL="<nodes>1:ppn=80</nodes>"
-    ;;
-  "jet")
-    export IC_EXTRN_MDL_BASEDIR="/lfs5/BMC/nrtrr/RRFS2_RETRO_DATA/May2024/GFS"
-    export LBC_EXTRN_MDL_BASEDIR=${IC_EXTRN_MDL_BASEDIR}
-    export OBSPATH="/lfs5/BMC/nrtrr/RRFS2_RETRO_DATA/May2024/obs_rap"
-    export OBSPATH_NSSLMOSIAC="/lfs5/BMC/nrtrr/RRFS2_RETRO_DATA/May2024/reflectivity"
-    export OBSPATH_AIRNOW="/lfs5/BMC/nrtrr/RRFS2_RETRO_DATA/May2024/airnow"
-    export ACCOUNT="nrtrr"
-    export QUEUE="batch"
-    export PARTITION="kjet"
     ;;
   "orion"|"hercules")
     export IC_EXTRN_MDL_BASEDIR="/work2/noaa/wrfruc/RRFS2_RETRO_DATA/May2024/GFS"

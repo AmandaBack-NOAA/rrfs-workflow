@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC1091,SC2153,SC2154,SC2034
-declare -rx PS4='+ $(basename ${BASH_SOURCE[0]:-${FUNCNAME[0]:-"Unknown"}})[${LINENO}]: '
+declare -rx PS4='+${SECONDS}s $(basename ${BASH_SOURCE[0]:-${FUNCNAME[0]:-"Unknown"}})[${LINENO}]: '
 set -x
 cpreq=${cpreq:-cpreq}
 prefix=${EXTRN_MDL_SOURCE%_NCO} # remove the trailing '_NCO' if any
@@ -14,6 +14,8 @@ init_case=7
 start_time=$(date -d "${CDATE:0:8} ${CDATE:8:2}" +%Y-%m-%d_%H:%M:%S)
 end_time=${start_time}
 
+lbc_hydrometeors_rrfs=true
+lbc_hydrometeors_gfs=false
 if [[ "${prefix}" == "RAP" || "${prefix}" == "HRRR" ]]; then
   nfglevels=51
   nfgsoillevels=9
@@ -56,7 +58,11 @@ sed -e "s/@input_stream@/static.nc/" -e "s/@output_stream@/init.nc/" \
 ln -snf "${UMBRELLA_UNGRIB_IC_DATA}/${prefix}:${start_time:0:13}" .
 ${cpreq} "${FIXrrfs}/${MESH_NAME}/${MESH_NAME}.static.nc" static.nc
 ${cpreq} "${FIXrrfs}/${MESH_NAME}/graphinfo/${MESH_NAME}.graph.info.part.${NTASKS}" .
-ln -snf "${FIXrrfs}/physics/${PHYSICS_SUITE}/QNWFA_QNIFA_SIGMA_MONTHLY.dat" .
+if [[ "${USE_MERRA2^^}" == "TRUE" ]]; then
+  ln -snf "${FIXrrfs}/physics/${PHYSICS_SUITE}/QNWFA_QNIFA_MERRA2_MONTHLY.dat" QNWFA_QNIFA_SIGMA_MONTHLY.dat
+else
+  ln -snf "${FIXrrfs}/physics/${PHYSICS_SUITE}/QNWFA_QNIFA_SIGMA_MONTHLY.dat" .
+fi
 
 # run init_atmosphere_model
 source prep_step

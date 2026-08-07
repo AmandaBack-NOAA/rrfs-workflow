@@ -13,9 +13,11 @@ nc                              QNCLOUD
 ni                              QNICE
 nr                              QNRAIN
 ng                              QNGRAUP
-volg                            VOLG
+volg                            QVGRAUPEL
 nwfa                            QNWFA
 nifa                            QNIFA
 pressure			P_HYD
 rho				MUB
 cldfrac_bl                      CLDFRA_BL
+qke                             QKE
+el_pbl                          EL_PBL

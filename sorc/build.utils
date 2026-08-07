@@ -5,7 +5,7 @@ rundir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 HOMErrfs="$(dirname "$rundir")"
 
 source "${HOMErrfs}"/workflow/tools/detect_machine.sh
-source "${HOMErrfs}"/workflow/tools/init.sh
+"${HOMErrfs}"/workflow/tools/init.sh
 
 cd "${HOMErrfs}/sorc/RRFS_UTILS" || exit
 rm -rf build/
@@ -26,5 +26,9 @@ EXEC="${HOMErrfs}/sorc/RRFS_UTILS/build/bin/process_metarcld.exe"
 cp "${EXEC}" "${HOMErrfs}/exec/process_metarcld.exe"
 EXEC="${HOMErrfs}/sorc/RRFS_UTILS/build/bin/process_NSSL_mosaic_nonvar.exe"
 cp "${EXEC}" "${HOMErrfs}/exec/process_NSSL_mosaic_nonvar.exe"
+EXEC="${HOMErrfs}/sorc/RRFS_UTILS/build/bin/process_update_sst.exe"
+cp "${EXEC}" "${HOMErrfs}/exec/process_update_sst.exe"
+EXEC="${HOMErrfs}/sorc/RRFS_UTILS/build/bin/process_generate_lakes.exe"
+cp "${EXEC}" "${HOMErrfs}/exec/process_generate_lakes.exe"
 
 exit 0

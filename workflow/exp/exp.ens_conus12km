@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Aloha! This file is to setup some top level experiment options
 #
+# shellcheck disable=all
 export NET=rrfs                    # rrfs, rtma, 
 export MESH_NAME=conus12km         # conus12km, conus3km, na12km, etc
 export WGF="enkf"   # working group function = "det", "enkf", "ens", "firewx"
@@ -19,6 +20,8 @@ export DO_DETERMINISTIC=false
 export ENS_SIZE=30
 export ZETA_LEVELS="L60.txt"
 #
+export USE_MERRA2=false  # false: default GOCART aerosol climatology; true: MERRA2 aerosol climatology
+#
 export DO_IODA=false
 export DO_JEDI=false
 export DO_NONVAR_CLOUD_ANA=false
@@ -28,6 +31,7 @@ export DO_RADAR_REF=false
 export SAVE_GETKF_ANL=false
 export DO_CLEAN=true
 export RADARREFL_TIMELEVEL="00"  # 00 15 30 45 min
+export SAT_USELIST=""  # check config.base on how to set up this variable
 
 export DO_CYC=true
 export CYC_INTERVAL=1
@@ -35,6 +39,7 @@ for i in {0..23};    do arr[$i]="01"; done # 1hr fcst
 for i in {0..23..6}; do arr[$i]="01"; done # 1hr fcst every 6hrs
 export FCST_LEN_HRS_CYCLES="${arr[*]}"
 export HISTORY_INTERVAL=1
+export MPASOUT_TIMELEVELS="0 1"
 export POST_GROUP_TOT_NUM=1 # num of groups, the final group absorbs leftovers, the first group contains the extra f000h file
 export ENSMEAN_GROUP_TOTAL_NUM=3
 
@@ -51,6 +56,16 @@ export COLDSTART_CYCS="00 06 12 18"   # cycles to cold start from external model
 export RECENTER_CYCS="${COLDSTART_CYCS}"
 export DET_RECENTERCYCS_DO_DA=false # whether or not do detministic DA at RECENTER_CYCS
 #
+#export DO_PYDAMONITOR=true
+#export DO_GRAPHICS=true
+#export GRAPHICS_TILES="full NE NC NW SE SC SW EastCO"
+#export DO_ARCHIVE=true
+#export ARCHIVE_INTERVAL=24  # run the archive task every several hours
+#export ARCHIVE_HPSSDIR="/5year/BMC/wrfruc/Guoqing.Ge/${EXP_NAME}"
+#export ARCHIVE_COM1_SPEC='{"include":"ioda*, jedivar, nonvar*, fcst, upp, pyDAmonitor, graphics", "exclude":""}'  # use " inside and ' outside
+#export ARCHIVE_STMP=''  # eg. 'fcst,mpassit'  # archive files under the given task umbrella directories
+#export ARCHIVE_STMP_INTERVAL='12'  # ARCHIVE_STMP_INTERVAL must divide ARCHIVE_INTERVAL evenly
+#
 export NODES_IC="<nodes>1:ppn=40</nodes>"
 export NODES_LBC="<nodes>1:ppn=40</nodes>"
 export NODES_FCST="<nodes>1:ppn=40</nodes>"
@@ -66,7 +81,7 @@ export WALLTIME_MPASSIT="1:00:00"
 export WALLTIME_UPP="1:00:00"
 export WALLTIME_GETKF="00:30:00"
 #
-export KEEPDATA=NO
+export KEEPDATA=YES
 export TASKTHROTTLE=60
 #
 # local.setup: setup some local options specific to a platform or an experiment
@@ -98,7 +113,6 @@ case ${MACHINE} in
     export ACCOUNT="wrfruc"
     export QUEUE="batch"
     export PARTITION="u1-compute"
-    export PARTITION="u1-compute"
     export NODES_IC="<nodes>1:ppn=160</nodes>"
     export NODES_LBC="<nodes>1:ppn=160</nodes>"
     export NODES_FCST="<nodes>1:ppn=160</nodes>"
@@ -106,16 +120,6 @@ case ${MACHINE} in
     export NODES_UPP="<nodes>1:ppn=80</nodes>"
     export NODES_ENSMEAN="<nodes>1:ppn=80</nodes>"
     export NODES_GETKF="<nodes>1:ppn=160</nodes>"
-    ;;
-  "jet")
-    export IC_EXTRN_MDL_BASEDIR="/lfs5/BMC/nrtrr/RRFS2_RETRO_DATA/May2024/GEFS"
-    export LBC_EXTRN_MDL_BASEDIR=${IC_EXTRN_MDL_BASEDIR}
-    export OBSPATH="/lfs5/BMC/nrtrr/RRFS2_RETRO_DATA/May2024/obs_rap"
-    export OBSPATH_NSSLMOSIAC="/lfs5/BMC/nrtrr/RRFS2_RETRO_DATA/May2024/reflectivity"
-    export OBSPATH_AIRNOW="/lfs5/BMC/nrtrr/RRFS2_RETRO_DATA/May2024/airnow"
-    export ACCOUNT="nrtrr"
-    export QUEUE="batch"
-    export PARTITION="kjet"
     ;;
   "orion"|"hercules")
     export IC_EXTRN_MDL_BASEDIR="/work2/noaa/wrfruc/RRFS2_RETRO_DATA/May2024/GEFS"
@@ -127,6 +131,17 @@ case ${MACHINE} in
     export QUEUE="batch"
     export PARTITION=${MACHINE}
     export CLUSTER=""
+    if [[ "${MACHINE}" == "hercules" ]]; then
+      export NODES_IC="<nodes>1:ppn=80</nodes>"
+      export NODES_LBC="<nodes>1:ppn=80</nodes>"
+      export NODES_FCST="<nodes>1:ppn=80</nodes>"
+      export NODES_MPASSIT="<nodes>1:ppn=80</nodes>"
+      export NODES_UPP="<nodes>1:ppn=80</nodes>"
+      export NODES_GETKF="<nodes>2:ppn=40</nodes>"
+      export NODES_RECENTER="<nodes>1:ppn=32</nodes>"
+      export NODES_IODA_MRMS_REFL="<nodes>1:ppn=40</nodes>"
+      export NODES_ENSMEAN="<nodes>1:ppn=80</nodes>"
+    fi
     ;;
   "gaeac6")
     export IC_EXTRN_MDL_BASEDIR="/gpfs/f6/bil-fire10-oar/world-shared/RRFS2_RETRO_DATA/May2024/GEFS"

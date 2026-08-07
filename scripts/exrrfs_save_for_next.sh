@@ -1,30 +1,30 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC1091,SC2153,SC2154
-declare -rx PS4='+ $(basename ${BASH_SOURCE[0]:-${FUNCNAME[0]:-"Unknown"}})[${LINENO}]: '
+declare -rx PS4='+${SECONDS}s $(basename ${BASH_SOURCE[0]:-${FUNCNAME[0]:-"Unknown"}})[${LINENO}]: '
 set -x
 cpreq=${cpreq:-cpreq}
 
 cd "${DATA}" || exit 1
 mpasout_interval=${MPASOUT_INTERVAL:-1}
-cyc_interval=${CYC_INTERVAL:-1}
+fcst_hr=${FCST_HR:-1}
 #
-CDATEp=$( ${NDATE}  "${cyc_interval}"  "${CDATE}" )
+CDATEp=$( ${NDATE}  "${fcst_hr}"  "${CDATE}" )
 timestr=$(date -d "${CDATEp:0:8} ${CDATEp:8:2}" +%Y-%m-%d_%H.%M.%S)
 #
 export CMDFILE="${DATA}/poescript_savefcst"
-mkdir -p "$(dirname "$CMDFILE")"
-: > "$CMDFILE"
+mkdir -p "$(dirname "${CMDFILE}")"
+: > "${CMDFILE}"
 
 # Populate the list for the ensemble members, or deterministic member
-if [[ "${ENS_SIZE:-0}" -gt 2 ]]; then
-  mapfile -t mem_list < <(printf "/mem%03d\n" $(seq 1 "$ENS_SIZE"))
+if (( "${ENS_SIZE:-0}" > 2 )); then
+  mapfile -t mem_list < <(printf "/mem%03d\n" $(seq 1 "${ENS_SIZE}"))
 else
   mem_list=("/") # if determinitic
 fi
 
 for memdir in "${mem_list[@]}"; do
   # Determine path
-  if [[ ${#memdir} -gt 1 ]]; then
+  if (( ${#memdir} > 1 )); then
     comoutdir=${COMOUT}/fcst/${WGF}${memdir}
     mpasout_file=${UMBRELLA_FCST_DATA}${memdir}/mpasout.${timestr}.nc
   else
@@ -32,7 +32,7 @@ for memdir in "${mem_list[@]}"; do
     mpasout_file=${UMBRELLA_FCST_DATA}/mpasout.${timestr}.nc
   fi
 
-  mkdir -p "$comoutdir"
+  mkdir -p "${comoutdir}"
 
 #
 # save to com
@@ -47,13 +47,15 @@ done
 # parallel run the serial tasks
 #
 ${cpreq} "${EXECrrfs}"/rank_run.x .
-${MPI_RUN_CMD} ./rank_run.x "$CMDFILE"
+${MPI_RUN_CMD} ./rank_run.x "${CMDFILE}"
 
 # Check for errors
 export err=$?
 if (( err != 0 )) ; then
   echo "save_for_next failed with error code ${err} "
   err_exit
+else
+  touch "${COMOUT}/fcst/${WGF}/fcst_f$(printf "%03d" "${fcst_hr}").done"
 fi
 
 exit 0

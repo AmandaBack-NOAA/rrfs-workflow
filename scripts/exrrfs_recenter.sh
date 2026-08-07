@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2154,SC1091
-declare -rx PS4='+ $(basename ${BASH_SOURCE[0]:-${FUNCNAME[0]:-"Unknown"}})[${LINENO}]: '
+declare -rx PS4='+${SECONDS}s $(basename ${BASH_SOURCE[0]:-${FUNCNAME[0]:-"Unknown"}})[${LINENO}]: '
 set -x
 
 cpreq=${cpreq:-cpreq}
@@ -20,10 +20,10 @@ fi
 #
 if [[ -s "${UMBRELLA_PREP_IC_DATA}/mem001/init.nc" ]]; then
   initial_file='init.nc'
-  varlist1="rho qv theta u"
+  varlist1="rho qv qc qr qi qs qg theta u tslb smois"
 else
   initial_file='mpasout.nc'
-  varlist1="pressure_p rho qv qc qr qi qs qg ni nr ng nc nifa nwfa volg surface_pressure theta tslb q2 u uReconstructZonal uReconstructMeridional refl10cm w"
+  varlist1="pressure_p rho qv qc qr qi qs qg ni nr ng nc nifa nwfa volg surface_pressure theta smois sh2o tslb q2 u uReconstructZonal uReconstructMeridional refl10cm w"
 fi
 
 numvar1=$(wc -w <<< "${varlist1}")
@@ -43,9 +43,9 @@ done
 #
 controlfile_init="${UMBRELLA_PREP_CONTROL_IC_DATA}/init.nc"
 controlfile_mpasout="${UMBRELLA_PREP_CONTROL_IC_DATA}/mpasout.nc"
-if [ -s "${controlfile_init}" ] ; then
+if [[ -s "${controlfile_init}" ]] ; then
   controlfile="${controlfile_init}"
-elif [ -s "${controlfile_mpasout}" ] ; then
+elif [[ -s "${controlfile_mpasout}" ]] ; then
   controlfile="${controlfile_mpasout}"
 else
   echo "Cannot find control background: ${controlfile_init} or ${controlfile_mpasout}"

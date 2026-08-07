@@ -1,22 +1,29 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC1091,SC2153,SC2017,SC2154,SC2034
-declare -rx PS4='+ $(basename ${BASH_SOURCE[0]:-${FUNCNAME[0]:-"Unknown"}})[${LINENO}]: '
+declare -rx PS4='+${SECONDS}s $(basename ${BASH_SOURCE[0]:-${FUNCNAME[0]:-"Unknown"}})[${LINENO}]: '
 set -x
 cpreq=${cpreq:-cpreq}
 prefix=${EXTRN_MDL_SOURCE%_NCO} # remove the trailing '_NCO' if any
 cd "${DATA}" || exit 1
 #
-# find start and end time
+# convert numbers to 10-based to be robust and easier to reference
 #
-fhr_chunk=$(( (10#${LENGTH}/10#${INTERVAL} + 1) / 10#${GROUP_TOTAL_NUM}*10#${INTERVAL} ))
-fhr_begin=$((10#${OFFSET} + (10#${GROUP_INDEX} - 1 )*10#${fhr_chunk} ))
-if (( 10#${GROUP_INDEX} == 10#${GROUP_TOTAL_NUM} )); then
-  fhr_end=$(( 10#${OFFSET} + 10#${LENGTH}))
+offset=$((10#${OFFSET:-0}))
+tot_length=$((10#${LENGTH:-0}))
+group_total_num=$((10#${GROUP_TOTAL_NUM:-1}))
+group_index=$((10#${GROUP_INDEX:-1}))
+interval=$((10#${INTERVAL:-1}))
+#
+# compute fhr_begin, fhr_end, and then fhr_all for a given group
+#
+group_fhr_len=$(( tot_length/group_total_num ))
+if (( group_index==1 )); then
+  fhr_begin=${offset}
 else
-  fhr_end=$((10#${OFFSET} + (10#${GROUP_INDEX})*10#${fhr_chunk} - 10#${INTERVAL} ))
+  fhr_begin=$(( offset + (group_index-1)*group_fhr_len + interval ))
 fi
-fhr_all=$(seq $((10#${fhr_begin})) $((10#${INTERVAL})) $((10#${fhr_end} )) )
-
+fhr_end=$(( offset + group_index*group_fhr_len  ))
+fhr_all=$(seq ${fhr_begin} ${interval} ${fhr_end})
 #
 # generate the namelist on the fly
 # required variables: init_case, start_time, end_time, nvertlevels, nsoillevels, nfglevles, nfgsoillevels,
@@ -29,6 +36,9 @@ start_time=$(date -d "${EDATE:0:8} ${EDATE:8:2}" +%Y-%m-%d_%H:%M:%S)
 EDATE=$(${NDATE} "${fhr_end}" "${CDATEin}")
 end_time=$(date -d "${EDATE:0:8} ${EDATE:8:2}" +%Y-%m-%d_%H:%M:%S)
 
+lbc_hydrometeors_rrfs=true
+lbc_hydrometeors_gfs=false
+
 if [[ "${prefix}" == "RAP" || "${prefix}" == "HRRR" ]]; then
   nfglevels=51
   nfgsoillevels=9
@@ -38,9 +48,13 @@ elif  [[ "${prefix}" == "RRFS" ]]; then
 elif  [[ "${prefix}" == "GFS" ]]; then
   nfglevels=58
   nfgsoillevels=4
+  lbc_hydrometeors_rrfs=false
+  lbc_hydrometeors_gfs=true
 elif  [[ "${prefix}" == "GEFS" ]]; then
   nfglevels=32
   nfgsoillevels=4
+  lbc_hydrometeors_rrfs=false
+  lbc_hydrometeors_gfs=false
 fi
 nsoillevels=${NSOIL_LEVELS}
 
@@ -79,7 +93,11 @@ nlevel=$(wc -l < "${zeta_levels}")
 ln -snf "${FIXrrfs}/${MESH_NAME}/${MESH_NAME}.invariant.nc_L${nlevel}_${prefix}" ./invariant.nc
 ${cpreq} "${FIXrrfs}/${MESH_NAME}/${MESH_NAME}.static.nc" static.nc
 ${cpreq} "${FIXrrfs}/${MESH_NAME}/graphinfo/${MESH_NAME}.graph.info.part.${NTASKS}" .
-ln -snf "${FIXrrfs}/physics/${PHYSICS_SUITE}/QNWFA_QNIFA_SIGMA_MONTHLY.dat" .
+if [[ "${USE_MERRA2^^}" == "TRUE" ]]; then
+  ln -snf "${FIXrrfs}/physics/${PHYSICS_SUITE}/QNWFA_QNIFA_MERRA2_MONTHLY.dat" QNWFA_QNIFA_SIGMA_MONTHLY.dat
+else
+  ln -snf "${FIXrrfs}/physics/${PHYSICS_SUITE}/QNWFA_QNIFA_SIGMA_MONTHLY.dat" .
+fi
 
 # run init_atmosphere_model
 source prep_step

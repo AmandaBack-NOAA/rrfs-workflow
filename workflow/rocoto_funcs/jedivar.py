@@ -23,12 +23,16 @@ def jedivar(xmlFile, expdir, spinup_mode=0):
     # Task-specific EnVars beyond the task_common_vars
     extrn_mdl_source = os.getenv('IC_EXTRN_MDL_NAME', 'IC_PREFIX_not_defined')
     physics_suite = os.getenv('PHYSICS_SUITE', 'PHYSICS_SUITE_not_defined')
+    lsm_scheme = os.getenv('LSM_SCHEME', 'sf_ruc')
     ens_size = int(os.getenv('ENS_SIZE', '2'))
     ens_bec_look_back_hrs = int(os.getenv('ENS_BEC_LOOK_BACK_HRS', '3'))
     snudgetype = os.getenv('SNUDGETYPES', '')
+    analysis_variables = os.getenv('ANALYSIS_VARIABLES', '0')
     dcTaskEnv = {
         'EXTRN_MDL_SOURCE': f'{extrn_mdl_source}',
         'PHYSICS_SUITE': f'{physics_suite}',
+        'LSM_SCHEME': f'{lsm_scheme}',
+        'NSOIL_LEVELS': os.getenv('NSOIL_LEVELS', '9'),
         'REFERENCE_TIME': '@Y-@m-@dT@H:00:00Z',
         'YAML_GEN_METHOD': os.getenv('YAML_GEN_METHOD', '1'),
         'COLDSTART_CYCS_DO_DA': os.getenv('COLDSTART_CYCS_DO_DA', 'TRUE').upper(),
@@ -40,6 +44,7 @@ def jedivar(xmlFile, expdir, spinup_mode=0):
         'ENS_BEC_LOOK_BACK_HRS': f'{ens_bec_look_back_hrs}',
         'ENS_SIZE': f'{ens_size}',
         'USE_CONV_SAT_INFO': os.getenv('USE_CONV_SAT_INFO', 'TRUE').upper(),
+        'SAT_USELIST': os.getenv('SAT_USELIST', ''),
         'EMPTY_OBS_SPACE_ACTION': os.getenv('EMPTY_OBS_SPACE_ACTION', 'skip output'),
         'STATIC_BEC_MODEL': os.getenv('STATIC_BEC_MODEL', 'GSIBEC'),
         'GSIBEC_X': os.getenv('GSIBEC_X', 'GSIBEC_X_not_defined'),
@@ -57,6 +62,8 @@ def jedivar(xmlFile, expdir, spinup_mode=0):
         dcTaskEnv['DO_SPINUP'] = 'TRUE'
     if len(snudgetype) >= 3:
         dcTaskEnv['SNUDGETYPES'] = snudgetype
+    if analysis_variables != '0':
+        dcTaskEnv['ANALYSIS_VARIABLES'] = analysis_variables
 
     dcTaskEnv['KEEPDATA'] = get_cascade_env(f"KEEPDATA_{task_id}".upper()).upper()
     # dependencies
@@ -76,18 +83,14 @@ def jedivar(xmlFile, expdir, spinup_mode=0):
 
     ens_dep = ""
     if HYB_WGT_ENS != "0" and HYB_WGT_ENS != "0.0" and HYB_ENS_TYPE == "1":  # rrfsens
-        RUN = 'rrfs'
+        RUN = NET  # so far, RUN = NET
         ens_dep = "\n    <or>"
         for enshrs in range(1, int(ens_bec_look_back_hrs) + 1):
-            ens_dep = ens_dep + "\n    <and>"
-            for i in range(1, int(ens_size) + 1):
-                ensindexstr = f'mem{i:03d}'
-                ens_dep = ens_dep + f'\n      <datadep age="00:01:00"><cyclestr offset="-{enshrs}:00:00">{HYB_ENS_PATH}/{RUN}.@Y@m@d/@H/fcst/enkf/</cyclestr>{ensindexstr}/<cyclestr>mpasout.@Y-@m-@d_@H.@M.@S.nc</cyclestr></datadep>'
-            ens_dep = ens_dep + "\n    </and>"
+            ens_dep = ens_dep + f'\n      <datadep age="00:00:05"><cyclestr offset="-{enshrs}:00:00">{HYB_ENS_PATH}/{RUN}.@Y@m@d/@H/fcst/enkf/fcst_f{enshrs:0>3}.done</cyclestr></datadep>'
         ens_dep = ens_dep + "\n    </or>"
 
     elif HYB_WGT_ENS != "0" and HYB_WGT_ENS != "0.0" and HYB_ENS_TYPE == "2":  # interpolated GDAS/GEFS
-        RUN = 'rrfs'
+        RUN = NET
         ens_dep = f'''
     <or>
       <datadep age="00:01:00"><cyclestr  offset="0:00:00">{HYB_ENS_PATH}/{RUN}.@Y@m@d/@H/ic/enkf/mem030/init.nc</cyclestr></datadep>

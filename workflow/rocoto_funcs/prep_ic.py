@@ -16,13 +16,17 @@ def prep_ic(xmlFile, expdir, do_ensemble=False, spinup_mode=0):
         cycledefs = 'prod'
     coldhrs = os.getenv('COLDSTART_CYCS', '03 15')
     cyc_interval = os.getenv('CYC_INTERVAL')
-    sfc_update_cycs = os.getenv('SFC_UPDATE_CYCS', '99')
+    do_sfc_update = os.getenv('DO_SFC_UPDATE', 'false').upper()
+    sst_update_cycs = os.getenv('SST_UPDATE_CYCS', '99')
+    sfc_update_look_back_hrs = os.getenv('SFC_UPDATE_LOOK_BACK_HRS', cyc_interval)
 
     # Task-specific EnVars beyond the task_common_vars
     dcTaskEnv = {
         'COLDSTART_CYCS': f'{coldhrs}',
-        'SFC_UPDATE_CYCS': f'{sfc_update_cycs}',
-        'SFC_UPDATE_SOURCE_DIR': os.getenv('SFC_UPDATE_SOURCE_DIR'),
+        'DO_SFC_UPDATE': f'{do_sfc_update}',
+        'SST_UPDATE_CYCS': f'{sst_update_cycs}',
+        'LAKE_SOURCE_DIR': os.getenv('LAKE_SOURCE_DIR', ''),
+        'NSST_SOURCE_DIR': os.getenv('NSST_SOURCE_DIR', ''),
         'DO_BLENDING': os.getenv('DO_BLENDING', 'FALSE'),
     }
     if spinup_mode != 0:
@@ -52,6 +56,12 @@ def prep_ic(xmlFile, expdir, do_ensemble=False, spinup_mode=0):
         dcTaskEnv['cpreq'] = "ln -snf"
     dcTaskEnv['KEEPDATA'] = get_cascade_env(f"KEEPDATA_{task_id}".upper()).upper()
     # dependencies
+    timedep = ""
+    realtime = os.getenv("REALTIME", "false")
+    if realtime.upper() == "TRUE":
+        starttime = get_cascade_env(f"STARTTIME_{task_id}".upper())
+        timedep = f'\n        <timedep><cyclestr offset="{starttime}">@Y@m@d@H@M00</cyclestr></timedep>'
+    #
     coldhrs = coldhrs.split(' ')
     streqs = ""
     strneqs = ""
@@ -61,13 +71,7 @@ def prep_ic(xmlFile, expdir, do_ensemble=False, spinup_mode=0):
         strneqs = strneqs + f"\n      <strneq><left><cyclestr>@H</cyclestr></left><right>{hr}</right></strneq>"
     streqs = streqs.lstrip('\n')
     strneqs = strneqs.lstrip('\n')
-    if do_ensemble:
-        datadep_prod = ""
-        for i in range(1, int(ens_size) + 1):
-            memdirstr = f'/mem{i:03d}'
-            datadep_prod = datadep_prod + f'''\n      <datadep age="00:01:00"><cyclestr offset="-{cyc_interval}:00:00">&COMROOT;/&NET;/&rrfs_ver;/&RUN;.@Y@m@d/@H/fcst/&WGF;{memdirstr}/</cyclestr><cyclestr>mpasout.@Y-@m-@d_@H.00.00.nc</cyclestr></datadep>'''
-    else:
-        datadep_prod = f'''\n      <datadep age="00:01:00"><cyclestr offset="-{cyc_interval}:00:00">&COMROOT;/&NET;/&rrfs_ver;/&RUN;.@Y@m@d/@H/fcst/&WGF;/</cyclestr><cyclestr>mpasout.@Y-@m-@d_@H.00.00.nc</cyclestr></datadep>'''
+    datadep_prod = f'''\n      <datadep age="00:00:05"><cyclestr offset="-{cyc_interval}:00:00">&COMROOT;/&NET;/&rrfs_ver;/&RUN;.@Y@m@d/@H/fcst/&WGF;/fcst_f{cyc_interval:0>3}.done</cyclestr></datadep>'''
 
     datadep_spinup = f'''\n      <taskdep task="fcst_spinup" cycle_offset="-1:00:00"/>'''
     if spinup_mode == 0:  # no parallel spinup cycles
@@ -76,6 +80,17 @@ def prep_ic(xmlFile, expdir, do_ensemble=False, spinup_mode=0):
         datadep = datadep_spinup
     else:  # spinup_mode == -1, i.e. a prod cycle paralle to spinup cycles
         datadep = "whatever"  # dependencies will be rewritten near the end of this file
+    # sfc update dependencies
+    sfc_dep = ""
+    if do_sfc_update == "TRUE":
+        dcTaskEnv['SFC_UPDATE_LOOK_BACK_HRS'] = sfc_update_look_back_hrs
+        dcTaskEnv['SFC_UPDATE_SOURCE_DIR'] = os.getenv('SFC_UPDATE_SOURCE_DIR', '')
+        datadep_sfc = ""
+        for i in range(1, int(sfc_update_look_back_hrs) + 1, 1):
+            datadep_sfc = datadep_sfc + f'''\n        <datadep age="00:00:05"><cyclestr offset="-{i}:00:00">&COMROOT;/&NET;/&rrfs_ver;/&RUN;.@Y@m@d/@H/fcst/&WGF;/fcst_f{i:0>3}.done</cyclestr></datadep>'''
+        sfc_dep = f'''
+      <or>{timedep}{datadep_sfc}
+      </or>'''
 
     #
     satbias_dep = ""
@@ -87,11 +102,6 @@ def prep_ic(xmlFile, expdir, do_ensemble=False, spinup_mode=0):
         satbias_dep += '\n' + spaces + f'  <datadep><cyclestr offset="-{cyc_interval}:00:00">&COMROOT;/&NET;/&rrfs_ver;/&RUN;.@Y@m@d/@H/jedivar/&WGF;/satbias_jumpstart</cyclestr></datadep>'
         satbias_dep += '\n' + spaces + '</or>'
     #
-    timedep = ""
-    realtime = os.getenv("REALTIME", "false")
-    if realtime.upper() == "TRUE":
-        starttime = get_cascade_env(f"STARTTIME_{task_id}".upper())
-        timedep = f'\n   <timedep><cyclestr offset="{starttime}">@Y@m@d@H@M00</cyclestr></timedep>'
     if os.getenv('DO_IC_LBC', 'TRUE').upper() == "TRUE":
         if do_ensemble:
             icdep = f'\n      <metataskdep metatask="ic"/>'
@@ -102,18 +112,16 @@ def prep_ic(xmlFile, expdir, do_ensemble=False, spinup_mode=0):
     #
     dependencies = f'''
   <dependency>
-  <and>{timedep}
    <or>
     <and>
       <or>
 {streqs}
-      </or>{icdep}{satbias_dep}
+      </or>{icdep}{sfc_dep}{satbias_dep}
     </and>
     <and>
 {strneqs}{datadep}
     </and>
    </or>
-  </and>
   </dependency>'''
 
 # overwrite dependencies if no cycling (forecst-only)
@@ -126,6 +134,17 @@ def prep_ic(xmlFile, expdir, do_ensemble=False, spinup_mode=0):
    <taskdep task="ic"/>
   </and>
   </dependency>'''
+
+# overwrite dependencies if do_rtma
+    if os.getenv('DO_RTMA', 'FALSE').upper() == "TRUE":
+        rtma_rrfspath = os.getenv('RTMA_RRFSPATH', 'RTMA_RRFSPATH_NOT_DEFINED')
+        dependencies = f'''
+  <dependency>
+  <and>{timedep}
+   <datadep age="00:00:05"><cyclestr offset="-{cyc_interval}:00:00">{rtma_rrfspath}/rrfs.@Y@m@d/@H/fcst/&WGF;/fcst_f{cyc_interval:0>3}.done</cyclestr></datadep>
+  </and>
+  </dependency>'''
+
 
 # overwrite dependencies if spinup_mode= -1
     if spinup_mode == -1:  # overwrite streqs and strneqs for prod tasks parallel to spinup cycles

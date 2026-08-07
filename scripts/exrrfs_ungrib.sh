@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC1091,SC2153,SC2154
-declare -rx PS4='+ $(basename ${BASH_SOURCE[0]:-${FUNCNAME[0]:-"Unknown"}})[${LINENO}]: '
+declare -rx PS4='+${SECONDS}s $(basename ${BASH_SOURCE[0]:-${FUNCNAME[0]:-"Unknown"}})[${LINENO}]: '
 set -x
 cpreq=${cpreq:-cpreq}
 #
@@ -24,20 +24,27 @@ if [[ "${DO_CHEMISTRY^^}" == "TRUE" ]] && [[ "${USE_EXTERNAL_CHEM^^}" == "TRUE" 
   ${cpreq} "${FIXrrfs}/ungrib/Vtable.${prefix}.SD" Vtable
 fi
 #
-# find start and end time
+# convert numbers to 10-based to be robust and easier to reference
 #
-# fhr_chunk=$(( (10#${LENGTH}/10#${INTERVAL} + 1)/10#${GROUP_TOTAL_NUM}*10#${INTERVAL} ))
-fhr_chunk=$(( (10#${LENGTH}/10#${INTERVAL} + 1) * 10#${INTERVAL} / 10#${GROUP_TOTAL_NUM} ))
-fhr_begin=$((10#${OFFSET} + (10#${GROUP_INDEX} - 1 )*10#${fhr_chunk} ))
-if (( 10#${GROUP_INDEX} == 10#${GROUP_TOTAL_NUM} )); then
-  fhr_end=$(( 10#${OFFSET} + 10#${LENGTH}))
+offset=$((10#${OFFSET:-0}))
+tot_length=$((10#${LENGTH:-0}))
+group_total_num=$((10#${GROUP_TOTAL_NUM:-1}))
+group_index=$((10#${GROUP_INDEX:-1}))
+interval=$((10#${INTERVAL:-1}))
+#
+# compute fhr_begin, fhr_end, and then fhr_all for a given group
+#
+group_fhr_len=$(( tot_length/group_total_num ))
+if (( group_index==1 )); then
+  fhr_begin=${offset}
 else
-  fhr_end=$((10#${OFFSET} + (10#${GROUP_INDEX})*10#${fhr_chunk} - 10#${INTERVAL} ))
+  fhr_begin=$(( offset + (group_index-1)*group_fhr_len + interval ))
 fi
+fhr_end=$(( offset + group_index*group_fhr_len  ))
+fhr_all=$(seq ${fhr_begin} ${interval} ${fhr_end})
 #
 # link all grib2 files with local file name (AAA, AAB, ...)
 #
-fhr_all=$(seq $((10#${fhr_begin})) $((10#${INTERVAL})) $((10#${fhr_end} )) )
 knt=0
 for fhr in  ${fhr_all}; do
   knt=$(( 10#${knt} + 1 ))
@@ -47,9 +54,9 @@ for fhr in  ${fhr_all}; do
   TARGET_FILE=${FILENAME_PATTERN/^HHH^/${HHH}}
   TARGET_FILE=${TARGET_FILE/^HH^/${HH}}
   GRIBFILE="${SOURCE_BASEDIR}/${TARGET_FILE}"
-  if [[ "${prefix}" == *RRFS*  ]]; then
+  if [[ "${REGRID_RRFS_GRIB2^^}" == "TRUE"  ]]; then
     if [[ -s "${GRIBFILE}" ]]; then
-      source "${USHrrfs}"/ungrib_rrfs.sh # prepare "${GRIBFILE_LOCAL}"
+      source "${USHrrfs}"/regrid_rrfs_grib2.sh # regrid NA3km rotated-lat-lon to the 3km variation of grid 130
     else
       echo "FATAL ERROR: ${GRIBFILE} missing"
       err_exit
@@ -57,7 +64,7 @@ for fhr in  ${fhr_all}; do
   elif [[ -s "${GRIBFILE}" ]]; then
     ${cpreq} "${GRIBFILE}"  "${GRIBFILE_LOCAL}"
     # if FILENAME_PATTERN_B is defined and non-empty
-    if [ -n "${FILENAME_PATTERN_B+x}" ] && [ -n "${FILENAME_PATTERN_B}" ]; then
+    if [[ -n "${FILENAME_PATTERN_B+x}" ]] && [[ -n "${FILENAME_PATTERN_B}" ]]; then
       TARGET_FILE=${FILENAME_PATTERN_B/^HHH^/${HHH}}
       TARGET_FILE=${TARGET_FILE/^HH^/${HH}}
       GRIBFILE="${SOURCE_BASEDIR}/${TARGET_FILE}"
@@ -65,7 +72,7 @@ for fhr in  ${fhr_all}; do
     fi
   else
     # If GRIBFILE does not exist, might need to do time interpolation
-    if [[ ${INTERVAL} -eq 1 ]] && (( fhr % 3 != 0 )); then
+    if (( INTERVAL == 1 )) && (( fhr % 3 != 0 )); then
       source "${USHrrfs}"/gefs_interpolation.sh
     else
       echo "FATAL ERROR: ${GRIBFILE} missing and not eligible for time interpolation"

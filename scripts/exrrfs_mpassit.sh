@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2153,SC1091,SC2154
-declare -rx PS4='+ $(basename ${BASH_SOURCE[0]:-${FUNCNAME[0]:-"Unknown"}})[${LINENO}]: '
+declare -rx PS4='+${SECONDS}s $(basename ${BASH_SOURCE[0]:-${FUNCNAME[0]:-"Unknown"}})[${LINENO}]: '
 set -x
 
 cpreq=${cpreq:-cpreq}
@@ -15,6 +15,9 @@ ${cpreq} "${FIXrrfs}"/mpassit/diaglist                    diaglist
 ${cpreq} "${FIXrrfs}"/mpassit/histlist_2d                 histlist_2d
 ${cpreq} "${FIXrrfs}"/mpassit/histlist_3d                 histlist_3d
 ${cpreq} "${FIXrrfs}"/mpassit/histlist_soil               histlist_soil
+if [[ "${LSM_SCHEME}" == *noah* ]]; then
+  sed -i '/^snowfallac/d' histlist_2d  # sf_noah, sf_noahmp does not output variable density snowfall accumulation
+fi
 #
 if [[ "${DO_CHEMISTRY^^}" == "TRUE" ]]; then
   source "${USHrrfs}"/chem_mpassit.sh
@@ -52,7 +55,7 @@ for fhr in "${fhr_all[@]}"; do
     # wait for file available 
     for (( j=0; j < 20; j=j+1)); do
       if [[ -s ${diag_file} ]]; then
-	break
+        break
       fi
       sleep 60s
     done
@@ -69,7 +72,7 @@ for fhr in "${fhr_all[@]}"; do
       source prep_step
       ${MPI_RUN_CMD} ./mpassit.x namelist.mpassit
       # check the status, copy output to UMBRELLA_MPASSIT_DATA
-      if [[ -f "./mpassit.${timestr}.nc" ]] && (( $(stat -c%s "./mpassit.${timestr}.nc") > 104857600 )); then
+      if [[ -s "./mpassit.${timestr}.nc" ]] && (( $(stat -c%s "./mpassit.${timestr}.nc") > 104857600 )); then
         mv "./mpassit.${timestr}.nc" "${UMBRELLA_MPASSIT_DATA}/."
         mv namelist.mpassit "namelist.mpassit_${fhr}"
       else

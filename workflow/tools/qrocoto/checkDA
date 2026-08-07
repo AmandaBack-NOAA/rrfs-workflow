@@ -29,7 +29,15 @@ expdir = args[1]
 
 # check exp.setup
 getkf = False
-with open(f'{expdir}/rrfs.xml') as infile:
+if os.path.exists(f'{expdir}/rrfs.xml'):
+    NET = "rrfs"
+elif os.path.exists(f'{expdir}/rtma.xml'):
+    NET = "rtma"
+elif os.path.exists(f'{expdir}/arps.xml'):
+    NET = "arps"
+elif os.path.exists(f'{expdir}/global.xml'):
+    NET = "global"
+with open(f'{expdir}/{NET}.xml') as infile:
     for line in infile:
         if "COLDSTART_CYCS_DO_DA" in line:
             COLDSTART_CYCS_DO_DA = get_value(line)
@@ -41,7 +49,7 @@ with open(f'{expdir}/rrfs.xml') as infile:
             HYB_ENS_TYPE = get_value(line)
         elif "HYB_ENS_PATH" in line:
             HYB_ENS_PATH = get_value(line)
-        elif "CYC_INTERVAL" in line:
+        elif line.startswith("<envar><name>CYC_INTERVAL"):
             CYC_INTERVAL = get_value(line)
         elif "FCST_LEN_HRS_CYCLES" in line:
             FCST_LEN_HRS_CYCLES = get_value(line)
@@ -49,6 +57,8 @@ with open(f'{expdir}/rrfs.xml') as infile:
             getkf = True
         elif "STATIC_BEC_MODEL" in line:
             STATIC_BEC_MODEL = get_value(line)
+        elif "SAT_USELIST" in line:
+            SAT_USELIST = get_value(line)
 
 # prepare a summary
 if float(HYB_WGT_ENS) == 0.0 and float(HYB_WGT_STATIC) == 1.0:
@@ -212,12 +222,20 @@ with open(yfile, 'r') as infile, open(yfile2, 'w') as outfile:
                     break
             # ~~~~~~
             if not use_obs:  # check whether it is a satellite observation
-                for obs in dcSatInfo:
-                    if obs in line:
-                        summary_obs_use += f"{obs},"
-                        use_obs = True
-                        passivate = False # satellite monitoring needs further work
-                        break
+                sis_found = False
+                sname = line.split(':')[1].strip()
+                if SAT_USELIST == "__passthrough__":
+                    for obs in dcSatInfo:
+                        if obs in line:
+                            sis_found = True
+                            break
+                elif sname in SAT_USELIST:
+                    sis_found = True
+                # ~~~~~~~~
+                if sis_found:
+                    summary_obs_use += f"{sname},"
+                    use_obs = True
+                    passivate = False # satellite monitoring needs further work
 
         elif "obs filters:" in line:
             buffer_zone.append(line)

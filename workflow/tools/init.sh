@@ -33,6 +33,9 @@ case ${MACHINE} in
       echo "unsupported gaea cluster: ${MACHINE}"
     fi
     ;;
+  hostgeneric)
+    exit 0
+    ;;
   *)
     FIX_RRFS_LOCATION=/unknown/location
     echo "platform not supported: ${MACHINE}"
@@ -47,4 +50,4 @@ fi
 ln -snf "${FIX_RRFS_LOCATION}"  "${agent_dir}"
 
 touch "${run_dir}/../../fix/INIT_DONE"
-"${run_dir}"/link_extra_meshes.sh
+"${run_dir}"/link_fix_meshes.sh

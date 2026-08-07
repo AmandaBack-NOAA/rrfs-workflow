@@ -8,14 +8,9 @@ from rocoto_funcs.base import xml_task, get_cascade_env
 def prep_lbc(xmlFile, expdir, do_ensemble=False):
     meta_id = 'prep_lbc'
     cycledefs = 'prod'
-    num_spinup_cycledef = int(os.getenv('NUM_SPINUP_CYCLEDEF', '0'))
-    prep_lbc_look_back_hrs = int(os.getenv("PREP_LBC_LOOK_BACK_HRS", "6"))
-    if num_spinup_cycledef == 1:
+    if os.getenv("DO_SPINUP", "FALSE").upper() == "TRUE":
         cycledefs = 'prod,spinup'
-    elif num_spinup_cycledef == 2:
-        cycledefs = 'prod,spinup,spinup2'
-    elif num_spinup_cycledef == 3:
-        cycledefs = 'prod,spinup,spinup2,spinup3'
+    prep_lbc_look_back_hrs = int(os.getenv("PREP_LBC_LOOK_BACK_HRS", "6"))
 
     # Task-specific EnVars beyond the task_common_vars
     dcTaskEnv = {
@@ -56,9 +51,11 @@ def prep_lbc(xmlFile, expdir, do_ensemble=False):
     taskdep = ""
     for hr in range(0, int(prep_lbc_look_back_hrs) + 1):
         taskdep = taskdep + f'\n     <metataskdep metatask="lbc{ensindexstr}" cycle_offset="-{hr}:00:00" />'
+    if os.getenv('DO_RTMA', 'FALSE').upper() == 'TRUE':
+        taskdep = f'\n     <taskdep task="prep_ic"/>'
 
     dependencies = ""
-    if os.getenv('DO_IC_LBC', 'TRUE').upper() == "TRUE":
+    if os.getenv('DO_IC_LBC', 'TRUE').upper() == "TRUE" or os.getenv('DO_RTMA', 'FALSE').upper() == 'TRUE':
         dependencies = f'''
   <dependency>
   <and>{timedep}

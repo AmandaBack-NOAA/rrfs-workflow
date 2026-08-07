@@ -1,6 +1,6 @@
 _member: &memberConfig
-  date: &analysisDate '@analysisDate@'
-  state variables: &incvars [water_vapor_mixing_ratio_wrt_moist_air, air_pressure_at_surface, air_temperature, northward_wind, eastward_wind, cloud_liquid_water, cloud_liquid_ice, rain_water, snow_water, graupel, equivalent_reflectivity_factor, upward_air_velocity]
+  date: &ANALYSIS_DATE '@ANALYSIS_DATE@'
+  state variables: &incvars [water_vapor_mixing_ratio_wrt_moist_air, air_pressure_at_surface, air_temperature, northward_wind, eastward_wind]
   stream name: ensemble
 
 output:
@@ -27,7 +27,7 @@ variational:
 cost function:
   cost type: 3D-Var
   time window:
-     begin: '@beginDate@'
+     begin: '@BEGIN_DATE@'
      length: PT4H
   jb evaluation: false
   geometry:
@@ -74,7 +74,7 @@ cost function:
     - w
     - upward_air_velocity
     filename: mpasout.nc
-    date: *analysisDate
+    date: *ANALYSIS_DATE
   background error:
     covariance model: hybrid
     components:
@@ -158,6 +158,7 @@ cost function:
            engine:
              type: H5File
              obsfile: data/obs/ioda_mrms_refl.nc
+             missing file action: "warn"
          obsdataout:
            engine:
              type: H5File
@@ -236,6 +237,22 @@ cost function:
          # ------------------
          # airTemperature (181)
          # ------------------
+         # Reject all obs not in variable type
+         - filter: Perform Action
+           where:
+           - variable: ObsValue/airTemperature
+             value: is_not_valid
+           action:
+             name: reduce obs space
+
+         # Reject all obs not in bufr type
+         - filter: Perform Action
+           where:
+           - variable: ObsType/airTemperature
+             is_not_in: 181
+           action:
+             name: reduce obs space
+
          # Reject all obs with QualityMarker > 3
          - filter: RejectList
            filter variables:
@@ -264,7 +281,7 @@ cost function:
 #           - name: airTemperature
 #           min_spacing: PT90M
 #           tolerance: PT0H
-#           seed_time: "@analysisDate@"
+#           seed_time: "@ANALYSIS_DATE@"
 #           category_variable:
 #             name: MetaData/longitude_latitude_pressure
 #           action:
@@ -512,6 +529,22 @@ cost function:
          # ------------------
          # airTemperature (183)
          # ------------------
+         # Reject all obs not in variable type
+         - filter: Perform Action
+           where:
+           - variable: ObsValue/airTemperature
+             value: is_not_valid
+           action:
+             name: reduce obs space
+
+         # Reject all obs not in bufr type
+         - filter: Perform Action
+           where:
+           - variable: ObsType/airTemperature
+             is_not_in: 183
+           action:
+             name: reduce obs space
+
          # Reject all obs with QualityMarker > 3
          - filter: RejectList
            filter variables:
@@ -540,7 +573,7 @@ cost function:
 #           - name: airTemperature
 #           min_spacing: PT90M
 #           tolerance: PT0H
-#           seed_time: "@analysisDate@"
+#           seed_time: "@ANALYSIS_DATE@"
 #           category_variable:
 #             name: MetaData/longitude_latitude_pressure
 #           action:
@@ -786,6 +819,22 @@ cost function:
          # ------------------
          # airTemperature (187)
          # ------------------
+         # Reject all obs not in variable type
+         - filter: Perform Action
+           where:
+           - variable: ObsValue/airTemperature
+             value: is_not_valid
+           action:
+             name: reduce obs space
+
+         # Reject all obs not in bufr type
+         - filter: Perform Action
+           where:
+           - variable: ObsType/airTemperature
+             is_not_in: 187
+           action:
+             name: reduce obs space
+
          # Reject all obs with QualityMarker > 3
          - filter: RejectList
            filter variables:
@@ -814,7 +863,7 @@ cost function:
            - name: airTemperature
            min_spacing: PT90M
            tolerance: PT0H
-           seed_time: "@analysisDate@"
+           seed_time: "@ANALYSIS_DATE@"
            category_variable:
              name: MetaData/stationIdentification
            action:
@@ -1064,6 +1113,22 @@ cost function:
          # ------------------
          # specificHumidity (181)
          # ------------------
+         # Reject all obs not in variable type
+         - filter: Perform Action
+           where:
+           - variable: ObsValue/specificHumidity
+             value: is_not_valid
+           action:
+             name: reduce obs space
+
+         # Reject all obs not in bufr type
+         - filter: Perform Action
+           where:
+           - variable: ObsType/specificHumidity
+             is_not_in: 181
+           action:
+             name: reduce obs space
+
          # Reject all obs with QualityMarker > 3
          - filter: RejectList
            filter variables:
@@ -1092,7 +1157,7 @@ cost function:
 #           - name: specificHumidity
 #           min_spacing: PT90M
 #           tolerance: PT0H
-#           seed_time: "@analysisDate@"
+#           seed_time: "@ANALYSIS_DATE@"
 #           category_variable:
 #             name: MetaData/longitude_latitude_pressure
 #           action:
@@ -1339,6 +1404,22 @@ cost function:
          # ------------------
          # specificHumidity (183)
          # ------------------
+         # Reject all obs not in variable type
+         - filter: Perform Action
+           where:
+           - variable: ObsValue/specificHumidity
+             value: is_not_valid
+           action:
+             name: reduce obs space
+
+         # Reject all obs not in bufr type
+         - filter: Perform Action
+           where:
+           - variable: ObsType/specificHumidity
+             is_not_in: 183
+           action:
+             name: reduce obs space
+
          # Reject all obs with QualityMarker > 3
          - filter: RejectList
            filter variables:
@@ -1367,7 +1448,7 @@ cost function:
 #           - name: specificHumidity
 #           min_spacing: PT90M
 #           tolerance: PT0H
-#           seed_time: "@analysisDate@"
+#           seed_time: "@ANALYSIS_DATE@"
 #           category_variable:
 #             name: MetaData/longitude_latitude_pressure
 #           action:
@@ -1607,6 +1688,22 @@ cost function:
          # ------------------
          # specificHumidity (187)
          # ------------------
+         # Reject all obs not in variable type
+         - filter: Perform Action
+           where:
+           - variable: ObsValue/specificHumidity
+             value: is_not_valid
+           action:
+             name: reduce obs space
+
+         # Reject all obs not in bufr type
+         - filter: Perform Action
+           where:
+           - variable: ObsType/specificHumidity
+             is_not_in: 187
+           action:
+             name: reduce obs space
+
          # Reject all obs with QualityMarker > 3
          - filter: RejectList
            filter variables:
@@ -1635,7 +1732,7 @@ cost function:
            - name: specificHumidity
            min_spacing: PT90M
            tolerance: PT0H
-           seed_time: "@analysisDate@"
+           seed_time: "@ANALYSIS_DATE@"
            category_variable:
              name: MetaData/stationIdentification
            action:
@@ -1881,6 +1978,22 @@ cost function:
          # ------------------
          # stationPressure (181)
          # ------------------
+         # Reject all obs not in variable type
+         - filter: Perform Action
+           where:
+           - variable: ObsValue/stationPressure
+             value: is_not_valid
+           action:
+             name: reduce obs space
+
+         # Reject all obs not in bufr type
+         - filter: Perform Action
+           where:
+           - variable: ObsType/stationPressure
+             is_not_in: 181
+           action:
+             name: reduce obs space
+
          # Reject all obs with QualityMarker > 3
          - filter: RejectList
            filter variables:
@@ -1909,7 +2022,7 @@ cost function:
 #           - name: stationPressure
 #           min_spacing: PT90M
 #           tolerance: PT0H
-#           seed_time: "@analysisDate@"
+#           seed_time: "@ANALYSIS_DATE@"
 #           category_variable:
 #             name: MetaData/longitude_latitude_pressure
 #           action:
@@ -2152,6 +2265,22 @@ cost function:
          # ------------------
          # stationPressure (187)
          # ------------------
+         # Reject all obs not in variable type
+         - filter: Perform Action
+           where:
+           - variable: ObsValue/stationPressure
+             value: is_not_valid
+           action:
+             name: reduce obs space
+
+         # Reject all obs not in bufr type
+         - filter: Perform Action
+           where:
+           - variable: ObsType/stationPressure
+             is_not_in: 187
+           action:
+             name: reduce obs space
+
          # Reject all obs with QualityMarker > 3
          - filter: RejectList
            filter variables:
@@ -2180,7 +2309,7 @@ cost function:
            - name: stationPressure
            min_spacing: PT90M
            tolerance: PT0H
-           seed_time: "@analysisDate@"
+           seed_time: "@ANALYSIS_DATE@"
            category_variable:
              name: MetaData/stationIdentification
            action:
@@ -2428,6 +2557,28 @@ cost function:
          # ------------------
          # wind (281)
          # ------------------
+         # Reject all obs not in variable type
+         - filter: Perform Action
+           where:
+           - variable: ObsValue/windEastward
+             value: is_not_valid
+           - variable: ObsValue/windNorthward
+             value: is_not_valid
+           where operator: or
+           action:
+             name: reduce obs space
+
+         # Reject all obs not in bufr type
+         - filter: Perform Action
+           where:
+           - variable: ObsType/windEastward
+             is_not_in: 281
+           - variable: ObsType/windNorthward
+             is_not_in: 281
+           where operator: or
+           action:
+             name: reduce obs space
+
          # Reject all obs with QualityMarker > 3
          - filter: RejectList
            filter variables:
@@ -2458,7 +2609,7 @@ cost function:
 #           - name: windNorthward
 #           min_spacing: PT90M
 #           tolerance: PT0H
-#           seed_time: "@analysisDate@"
+#           seed_time: "@ANALYSIS_DATE@"
 #           category_variable:
 #             name: MetaData/longitude_latitude_pressure
 #           action:
@@ -2745,6 +2896,27 @@ cost function:
          # ------------------
          # wind (284)
          # ------------------
+         - filter: Perform Action
+           where:
+           - variable: ObsValue/windEastward
+             value: is_not_valid
+           - variable: ObsValue/windNorthward
+             value: is_not_valid
+           where operator: or
+           action:
+             name: reduce obs space
+
+         # Reject all obs not in bufr type
+         - filter: Perform Action
+           where:
+           - variable: ObsType/windEastward
+             is_not_in: 284
+           - variable: ObsType/windNorthward
+             is_not_in: 284
+           where operator: or
+           action:
+             name: reduce obs space
+
          # Reject all obs with QualityMarker > 3
          - filter: RejectList
            filter variables:
@@ -2775,7 +2947,7 @@ cost function:
 #           - name: windNorthward
 #           min_spacing: PT90M
 #           tolerance: PT0H
-#           seed_time: "@analysisDate@"
+#           seed_time: "@ANALYSIS_DATE@"
 #           category_variable:
 #             name: MetaData/longitude_latitude_pressure
 #           action:
@@ -3035,14 +3207,20 @@ cost function:
          simulated variables: [windEastward, windNorthward]
 
        obs operator:
-         name: SfcCorrected
-         correction scheme to use: GSL
-         variables:
-         - name: windEastward
-         - name: windNorthward
+           name: VertInterp
+           vertical coordinate: air_pressure
+           observation vertical coordinate: pressure
+           observation vertical coordinate group: MetaData
+           interpolation method: log-linear
+           #gsi geovals:
+           #  filename: "obsout/sfc_uv_geoval_2022052619.nc"
+           #  levels_are_top_down: False
+           variables:
+           - name: windEastward
+           - name: windNorthward
 
        linear obs operator:
-         name: Identity
+         name: VertInterp
 
        obs error:
          covariance model: diagonal
@@ -3055,6 +3233,27 @@ cost function:
          # ------------------
          # wind (287)
          # ------------------
+         - filter: Perform Action
+           where:
+           - variable: ObsValue/windEastward
+             value: is_not_valid
+           - variable: ObsValue/windNorthward
+             value: is_not_valid
+           where operator: or
+           action:
+             name: reduce obs space
+
+         # Reject all obs not in bufr type
+         - filter: Perform Action
+           where:
+           - variable: ObsType/windEastward
+             is_not_in: 287
+           - variable: ObsType/windNorthward
+             is_not_in: 287
+           where operator: or
+           action:
+             name: reduce obs space
+
          # Reject all obs with QualityMarker > 3
          - filter: RejectList
            filter variables:
@@ -3085,7 +3284,7 @@ cost function:
            - name: windNorthward
            min_spacing: PT90M
            tolerance: PT0H
-           seed_time: "@analysisDate@"
+           seed_time: "@ANALYSIS_DATE@"
            category_variable:
              name: MetaData/stationIdentification
            action:
@@ -3370,6 +3569,22 @@ cost function:
          # ------------------
          # airTemperature (120)
          # ------------------
+         # Reject all obs not in variable type
+         - filter: Perform Action
+           where:
+           - variable: ObsValue/airTemperature
+             value: is_not_valid
+           action:
+             name: reduce obs space
+
+         # Reject all obs not in bufr type
+         - filter: Perform Action
+           where:
+           - variable: ObsType/airTemperature
+             is_not_in: 120
+           action:
+             name: reduce obs space
+
          # Reject all obs with QualityMarker > 3
          - filter: RejectList
            filter variables:
@@ -3398,7 +3613,7 @@ cost function:
 #           - name: airTemperature
 #           min_spacing: PT90M
 #           tolerance: PT0H
-#           seed_time: "@analysisDate@"
+#           seed_time: "@ANALYSIS_DATE@"
 #           category_variable:
 #             name: MetaData/longitude_latitude_pressure
 #           action:
@@ -3644,6 +3859,22 @@ cost function:
          # ------------------
          # airTemperature (132)
          # ------------------
+         # Reject all obs not in variable type
+         - filter: Perform Action
+           where:
+           - variable: ObsValue/airTemperature
+             value: is_not_valid
+           action:
+             name: reduce obs space
+
+         # Reject all obs not in bufr type
+         - filter: Perform Action
+           where:
+           - variable: ObsType/airTemperature
+             is_not_in: 132
+           action:
+             name: reduce obs space
+
          # Reject all obs with QualityMarker > 3
          - filter: RejectList
            filter variables:
@@ -3672,7 +3903,7 @@ cost function:
 #           - name: airTemperature
 #           min_spacing: PT90M
 #           tolerance: PT0H
-#           seed_time: "@analysisDate@"
+#           seed_time: "@ANALYSIS_DATE@"
 #           category_variable:
 #             name: MetaData/longitude_latitude_pressure
 #           action:
@@ -3918,6 +4149,22 @@ cost function:
          # ------------------
          # specificHumidity (120)
          # ------------------
+         # Reject all obs not in variable type
+         - filter: Perform Action
+           where:
+           - variable: ObsValue/specificHumidity
+             value: is_not_valid
+           action:
+             name: reduce obs space
+
+         # Reject all obs not in bufr type
+         - filter: Perform Action
+           where:
+           - variable: ObsType/specificHumidity
+             is_not_in: 120
+           action:
+             name: reduce obs space
+
          # Reject all obs with QualityMarker > 3
          - filter: RejectList
            filter variables:
@@ -3946,7 +4193,7 @@ cost function:
 #           - name: specificHumidity
 #           min_spacing: PT90M
 #           tolerance: PT0H
-#           seed_time: "@analysisDate@"
+#           seed_time: "@ANALYSIS_DATE@"
 #           category_variable:
 #             name: MetaData/longitude_latitude_pressure
 #           action:
@@ -4192,6 +4439,22 @@ cost function:
          # ------------------
          # specificHumidity (132)
          # ------------------
+         # Reject all obs not in variable type
+         - filter: Perform Action
+           where:
+           - variable: ObsValue/specificHumidity
+             value: is_not_valid
+           action:
+             name: reduce obs space
+
+         # Reject all obs not in bufr type
+         - filter: Perform Action
+           where:
+           - variable: ObsType/specificHumidity
+             is_not_in: 132
+           action:
+             name: reduce obs space
+
          # Reject all obs with QualityMarker > 3
          - filter: RejectList
            filter variables:
@@ -4220,7 +4483,7 @@ cost function:
 #           - name: specificHumidity
 #           min_spacing: PT90M
 #           tolerance: PT0H
-#           seed_time: "@analysisDate@"
+#           seed_time: "@ANALYSIS_DATE@"
 #           category_variable:
 #             name: MetaData/longitude_latitude_pressure
 #           action:
@@ -4462,6 +4725,22 @@ cost function:
          # ------------------
          # stationPressure (120)
          # ------------------
+         # Reject all obs not in variable type
+         - filter: Perform Action
+           where:
+           - variable: ObsValue/stationPressure
+             value: is_not_valid
+           action:
+             name: reduce obs space
+
+         # Reject all obs not in bufr type
+         - filter: Perform Action
+           where:
+           - variable: ObsType/stationPressure
+             is_not_in: 120
+           action:
+             name: reduce obs space
+
          # Reject all obs with QualityMarker > 3
          - filter: RejectList
            filter variables:
@@ -4490,7 +4769,7 @@ cost function:
 #           - name: stationPressure
 #           min_spacing: PT90M
 #           tolerance: PT0H
-#           seed_time: "@analysisDate@"
+#           seed_time: "@ANALYSIS_DATE@"
 #           category_variable:
 #             name: MetaData/longitude_latitude_pressure
 #           action:
@@ -4737,6 +5016,28 @@ cost function:
          # ------------------
          # wind (220)
          # ------------------
+         # Reject all obs not in variable type
+         - filter: Perform Action
+           where:
+           - variable: ObsValue/windEastward
+             value: is_not_valid
+           - variable: ObsValue/windNorthward
+             value: is_not_valid
+           where operator: or
+           action:
+             name: reduce obs space
+
+         # Reject all obs not in bufr type
+         - filter: Perform Action
+           where:
+           - variable: ObsType/windEastward
+             is_not_in: 220
+           - variable: ObsType/windNorthward
+             is_not_in: 220
+           where operator: or
+           action:
+             name: reduce obs space
+
          # Reject all obs with QualityMarker > 3
          - filter: RejectList
            filter variables:
@@ -4767,7 +5068,7 @@ cost function:
 #           - name: windNorthward
 #           min_spacing: PT90M
 #           tolerance: PT0H
-#           seed_time: "@analysisDate@"
+#           seed_time: "@ANALYSIS_DATE@"
 #           category_variable:
 #             name: MetaData/longitude_latitude_pressure
 #           action:
@@ -5047,6 +5348,28 @@ cost function:
          # ------------------
          # wind (232)
          # ------------------
+         # Reject all obs not in variable type
+         - filter: Perform Action
+           where:
+           - variable: ObsValue/windEastward
+             value: is_not_valid
+           - variable: ObsValue/windNorthward
+             value: is_not_valid
+           where operator: or
+           action:
+             name: reduce obs space
+
+         # Reject all obs not in bufr type
+         - filter: Perform Action
+           where:
+           - variable: ObsType/windEastward
+             is_not_in: 232
+           - variable: ObsType/windNorthward
+             is_not_in: 232
+           where operator: or
+           action:
+             name: reduce obs space
+
          # Reject all obs with QualityMarker > 3
          - filter: RejectList
            filter variables:
@@ -5077,7 +5400,7 @@ cost function:
 #           - name: windNorthward
 #           min_spacing: PT90M
 #           tolerance: PT0H
-#           seed_time: "@analysisDate@"
+#           seed_time: "@ANALYSIS_DATE@"
 #           category_variable:
 #             name: MetaData/longitude_latitude_pressure
 #           action:
@@ -5356,6 +5679,22 @@ cost function:
          # ------------------
          # airTemperature (133)
          # ------------------
+         # Reject all obs not in variable type
+         - filter: Perform Action
+           where:
+           - variable: ObsValue/airTemperature
+             value: is_not_valid
+           action:
+             name: reduce obs space
+
+         # Reject all obs not in bufr type
+         - filter: Perform Action
+           where:
+           - variable: ObsType/airTemperature
+             is_not_in: 133
+           action:
+             name: reduce obs space
+
          # Reject all obs with QualityMarker > 3
          - filter: RejectList
            filter variables:
@@ -5384,7 +5723,7 @@ cost function:
 #           - name: airTemperature
 #           min_spacing: PT90M
 #           tolerance: PT0H
-#           seed_time: "@analysisDate@"
+#           seed_time: "@ANALYSIS_DATE@"
 #           category_variable:
 #             name: MetaData/longitude_latitude_pressure
 #           action:
@@ -5630,6 +5969,22 @@ cost function:
          # ------------------
          # specificHumidity (133)
          # ------------------
+         # Reject all obs not in variable type
+         - filter: Perform Action
+           where:
+           - variable: ObsValue/specificHumidity
+             value: is_not_valid
+           action:
+             name: reduce obs space
+
+         # Reject all obs not in bufr type
+         - filter: Perform Action
+           where:
+           - variable: ObsType/specificHumidity
+             is_not_in: 133
+           action:
+             name: reduce obs space
+
          # Reject all obs with QualityMarker > 3
          - filter: RejectList
            filter variables:
@@ -5658,7 +6013,7 @@ cost function:
 #           - name: specificHumidity
 #           min_spacing: PT90M
 #           tolerance: PT0H
-#           seed_time: "@analysisDate@"
+#           seed_time: "@ANALYSIS_DATE@"
 #           category_variable:
 #             name: MetaData/longitude_latitude_pressure
 #           action:
@@ -5905,6 +6260,28 @@ cost function:
          # ------------------
          # wind (233)
          # ------------------
+         # Reject all obs not in variable type
+         - filter: Perform Action
+           where:
+           - variable: ObsValue/windEastward
+             value: is_not_valid
+           - variable: ObsValue/windNorthward
+             value: is_not_valid
+           where operator: or
+           action:
+             name: reduce obs space
+
+         # Reject all obs not in bufr type
+         - filter: Perform Action
+           where:
+           - variable: ObsType/windEastward
+             is_not_in: 233
+           - variable: ObsType/windNorthward
+             is_not_in: 233
+           where operator: or
+           action:
+             name: reduce obs space
+
          # Reject all obs with QualityMarker > 3
          - filter: RejectList
            filter variables:
@@ -5935,7 +6312,7 @@ cost function:
 #           - name: windNorthward
 #           min_spacing: PT90M
 #           tolerance: PT0H
-#           seed_time: "@analysisDate@"
+#           seed_time: "@ANALYSIS_DATE@"
 #           category_variable:
 #             name: MetaData/longitude_latitude_pressure
 #           action:
@@ -6214,6 +6591,22 @@ cost function:
          # ------------------
          # airTemperature (130)
          # ------------------
+         # Reject all obs not in variable type
+         - filter: Perform Action
+           where:
+           - variable: ObsValue/airTemperature
+             value: is_not_valid
+           action:
+             name: reduce obs space
+
+         # Reject all obs not in bufr type
+         - filter: Perform Action
+           where:
+           - variable: ObsType/airTemperature
+             is_not_in: 130
+           action:
+             name: reduce obs space
+
          # Reject all obs with QualityMarker > 3
          - filter: RejectList
            filter variables:
@@ -6242,7 +6635,7 @@ cost function:
 #           - name: airTemperature
 #           min_spacing: PT90M
 #           tolerance: PT0H
-#           seed_time: "@analysisDate@"
+#           seed_time: "@ANALYSIS_DATE@"
 #           category_variable:
 #             name: MetaData/longitude_latitude_pressure
 #           action:
@@ -6488,6 +6881,22 @@ cost function:
          # ------------------
          # airTemperature (131)
          # ------------------
+         # Reject all obs not in variable type
+         - filter: Perform Action
+           where:
+           - variable: ObsValue/airTemperature
+             value: is_not_valid
+           action:
+             name: reduce obs space
+
+         # Reject all obs not in bufr type
+         - filter: Perform Action
+           where:
+           - variable: ObsType/airTemperature
+             is_not_in: 131
+           action:
+             name: reduce obs space
+
          # Reject all obs with QualityMarker > 3
          - filter: RejectList
            filter variables:
@@ -6516,7 +6925,7 @@ cost function:
 #           - name: airTemperature
 #           min_spacing: PT90M
 #           tolerance: PT0H
-#           seed_time: "@analysisDate@"
+#           seed_time: "@ANALYSIS_DATE@"
 #           category_variable:
 #             name: MetaData/longitude_latitude_pressure
 #           action:
@@ -6762,6 +7171,22 @@ cost function:
          # ------------------
          # airTemperature (134)
          # ------------------
+         # Reject all obs not in variable type
+         - filter: Perform Action
+           where:
+           - variable: ObsValue/airTemperature
+             value: is_not_valid
+           action:
+             name: reduce obs space
+
+         # Reject all obs not in bufr type
+         - filter: Perform Action
+           where:
+           - variable: ObsType/airTemperature
+             is_not_in: 134
+           action:
+             name: reduce obs space
+
          # Reject all obs with QualityMarker > 3
          - filter: RejectList
            filter variables:
@@ -6790,7 +7215,7 @@ cost function:
 #           - name: airTemperature
 #           min_spacing: PT90M
 #           tolerance: PT0H
-#           seed_time: "@analysisDate@"
+#           seed_time: "@ANALYSIS_DATE@"
 #           category_variable:
 #             name: MetaData/longitude_latitude_pressure
 #           action:
@@ -7036,6 +7461,22 @@ cost function:
          # ------------------
          # airTemperature (135)
          # ------------------
+         # Reject all obs not in variable type
+         - filter: Perform Action
+           where:
+           - variable: ObsValue/airTemperature
+             value: is_not_valid
+           action:
+             name: reduce obs space
+
+         # Reject all obs not in bufr type
+         - filter: Perform Action
+           where:
+           - variable: ObsType/airTemperature
+             is_not_in: 135
+           action:
+             name: reduce obs space
+
          # Reject all obs with QualityMarker > 3
          - filter: RejectList
            filter variables:
@@ -7064,7 +7505,7 @@ cost function:
 #           - name: airTemperature
 #           min_spacing: PT90M
 #           tolerance: PT0H
-#           seed_time: "@analysisDate@"
+#           seed_time: "@ANALYSIS_DATE@"
 #           category_variable:
 #             name: MetaData/longitude_latitude_pressure
 #           action:
@@ -7310,6 +7751,22 @@ cost function:
          # ------------------
          # specificHumidity (134)
          # ------------------
+         # Reject all obs not in variable type
+         - filter: Perform Action
+           where:
+           - variable: ObsValue/specificHumidity
+             value: is_not_valid
+           action:
+             name: reduce obs space
+
+         # Reject all obs not in bufr type
+         - filter: Perform Action
+           where:
+           - variable: ObsType/specificHumidity
+             is_not_in: 134
+           action:
+             name: reduce obs space
+
          # Reject all obs with QualityMarker > 3
          - filter: RejectList
            filter variables:
@@ -7338,7 +7795,7 @@ cost function:
 #           - name: specificHumidity
 #           min_spacing: PT90M
 #           tolerance: PT0H
-#           seed_time: "@analysisDate@"
+#           seed_time: "@ANALYSIS_DATE@"
 #           category_variable:
 #             name: MetaData/longitude_latitude_pressure
 #           action:
@@ -7585,6 +8042,28 @@ cost function:
          # ------------------
          # wind (230)
          # ------------------
+         # Reject all obs not in variable type
+         - filter: Perform Action
+           where:
+           - variable: ObsValue/windEastward
+             value: is_not_valid
+           - variable: ObsValue/windNorthward
+             value: is_not_valid
+           where operator: or
+           action:
+             name: reduce obs space
+
+         # Reject all obs not in bufr type
+         - filter: Perform Action
+           where:
+           - variable: ObsType/windEastward
+             is_not_in: 230
+           - variable: ObsType/windNorthward
+             is_not_in: 230
+           where operator: or
+           action:
+             name: reduce obs space
+
          # Reject all obs with QualityMarker > 3
          - filter: RejectList
            filter variables:
@@ -7615,7 +8094,7 @@ cost function:
 #           - name: windNorthward
 #           min_spacing: PT90M
 #           tolerance: PT0H
-#           seed_time: "@analysisDate@"
+#           seed_time: "@ANALYSIS_DATE@"
 #           category_variable:
 #             name: MetaData/longitude_latitude_pressure
 #           action:
@@ -7895,6 +8374,28 @@ cost function:
          # ------------------
          # wind (231)
          # ------------------
+         # Reject all obs not in variable type
+         - filter: Perform Action
+           where:
+           - variable: ObsValue/windEastward
+             value: is_not_valid
+           - variable: ObsValue/windNorthward
+             value: is_not_valid
+           where operator: or
+           action:
+             name: reduce obs space
+
+         # Reject all obs not in bufr type
+         - filter: Perform Action
+           where:
+           - variable: ObsType/windEastward
+             is_not_in: 231
+           - variable: ObsType/windNorthward
+             is_not_in: 231
+           where operator: or
+           action:
+             name: reduce obs space
+
          # Reject all obs with QualityMarker > 3
          - filter: RejectList
            filter variables:
@@ -7925,7 +8426,7 @@ cost function:
 #           - name: windNorthward
 #           min_spacing: PT90M
 #           tolerance: PT0H
-#           seed_time: "@analysisDate@"
+#           seed_time: "@ANALYSIS_DATE@"
 #           category_variable:
 #             name: MetaData/longitude_latitude_pressure
 #           action:
@@ -8205,6 +8706,28 @@ cost function:
          # ------------------
          # wind (234)
          # ------------------
+         # Reject all obs not in variable type
+         - filter: Perform Action
+           where:
+           - variable: ObsValue/windEastward
+             value: is_not_valid
+           - variable: ObsValue/windNorthward
+             value: is_not_valid
+           where operator: or
+           action:
+             name: reduce obs space
+
+         # Reject all obs not in bufr type
+         - filter: Perform Action
+           where:
+           - variable: ObsType/windEastward
+             is_not_in: 234
+           - variable: ObsType/windNorthward
+             is_not_in: 234
+           where operator: or
+           action:
+             name: reduce obs space
+
          # Reject all obs with QualityMarker > 3
          - filter: RejectList
            filter variables:
@@ -8235,7 +8758,7 @@ cost function:
 #           - name: windNorthward
 #           min_spacing: PT90M
 #           tolerance: PT0H
-#           seed_time: "@analysisDate@"
+#           seed_time: "@ANALYSIS_DATE@"
 #           category_variable:
 #             name: MetaData/longitude_latitude_pressure
 #           action:
@@ -8515,6 +9038,28 @@ cost function:
          # ------------------
          # wind (235)
          # ------------------
+         # Reject all obs not in variable type
+         - filter: Perform Action
+           where:
+           - variable: ObsValue/windEastward
+             value: is_not_valid
+           - variable: ObsValue/windNorthward
+             value: is_not_valid
+           where operator: or
+           action:
+             name: reduce obs space
+
+         # Reject all obs not in bufr type
+         - filter: Perform Action
+           where:
+           - variable: ObsType/windEastward
+             is_not_in: 235
+           - variable: ObsType/windNorthward
+             is_not_in: 235
+           where operator: or
+           action:
+             name: reduce obs space
+
          # Reject all obs with QualityMarker > 3
          - filter: RejectList
            filter variables:
@@ -8545,7 +9090,7 @@ cost function:
 #           - name: windNorthward
 #           min_spacing: PT90M
 #           tolerance: PT0H
-#           seed_time: "@analysisDate@"
+#           seed_time: "@ANALYSIS_DATE@"
 #           category_variable:
 #             name: MetaData/longitude_latitude_pressure
 #           action:
@@ -8898,6 +9443,22 @@ cost function:
          # ------------------
          # airTemperature (188)
          # ------------------
+         # Reject all obs not in variable type
+         - filter: Perform Action
+           where:
+           - variable: ObsValue/airTemperature
+             value: is_not_valid
+           action:
+             name: reduce obs space
+
+         # Reject all obs not in bufr type
+         - filter: Perform Action
+           where:
+           - variable: ObsType/airTemperature
+             is_not_in: 188
+           action:
+             name: reduce obs space
+
          # Reject all obs with QualityMarker > 3
          - filter: RejectList
            filter variables:
@@ -8926,7 +9487,7 @@ cost function:
 #           - name: airTemperature
 #           min_spacing: PT90M
 #           tolerance: PT0H
-#           seed_time: "@analysisDate@"
+#           seed_time: "@ANALYSIS_DATE@"
 #           category_variable:
 #             name: MetaData/longitude_latitude_pressure
 #           action:
@@ -9172,6 +9733,22 @@ cost function:
          # ------------------
          # specificHumidity (188)
          # ------------------
+         # Reject all obs not in variable type
+         - filter: Perform Action
+           where:
+           - variable: ObsValue/specificHumidity
+             value: is_not_valid
+           action:
+             name: reduce obs space
+
+         # Reject all obs not in bufr type
+         - filter: Perform Action
+           where:
+           - variable: ObsType/specificHumidity
+             is_not_in: 188
+           action:
+             name: reduce obs space
+
          # Reject all obs with QualityMarker > 3
          - filter: RejectList
            filter variables:
@@ -9200,7 +9777,7 @@ cost function:
 #           - name: specificHumidity
 #           min_spacing: PT90M
 #           tolerance: PT0H
-#           seed_time: "@analysisDate@"
+#           seed_time: "@ANALYSIS_DATE@"
 #           category_variable:
 #             name: MetaData/longitude_latitude_pressure
 #           action:
@@ -9439,6 +10016,22 @@ cost function:
          # ------------------
          # stationPressure (188)
          # ------------------
+         # Reject all obs not in variable type
+         - filter: Perform Action
+           where:
+           - variable: ObsValue/stationPressure
+             value: is_not_valid
+           action:
+             name: reduce obs space
+
+         # Reject all obs not in bufr type
+         - filter: Perform Action
+           where:
+           - variable: ObsType/stationPressure
+             is_not_in: 188
+           action:
+             name: reduce obs space
+
          # Reject all obs with QualityMarker > 3
          - filter: RejectList
            filter variables:
@@ -9467,7 +10060,7 @@ cost function:
 #           - name: stationPressure
 #           min_spacing: PT90M
 #           tolerance: PT0H
-#           seed_time: "@analysisDate@"
+#           seed_time: "@ANALYSIS_DATE@"
 #           category_variable:
 #             name: MetaData/longitude_latitude_pressure
 #           action:
@@ -9714,6 +10307,28 @@ cost function:
          # ------------------
          # wind (288)
          # ------------------
+         # Reject all obs not in variable type
+         - filter: Perform Action
+           where:
+           - variable: ObsValue/windEastward
+             value: is_not_valid
+           - variable: ObsValue/windNorthward
+             value: is_not_valid
+           where operator: or
+           action:
+             name: reduce obs space
+
+         # Reject all obs not in bufr type
+         - filter: Perform Action
+           where:
+           - variable: ObsType/windEastward
+             is_not_in: 288
+           - variable: ObsType/windNorthward
+             is_not_in: 288
+           where operator: or
+           action:
+             name: reduce obs space
+
          # Mesonet winds provider/station use lists
          - filter: RejectList  # initially reject all providers
          - filter: AcceptList  # accept back selected providers
@@ -10006,7 +10621,7 @@ cost function:
 #           - name: windNorthward
 #           min_spacing: PT90M
 #           tolerance: PT0H
-#           seed_time: "@analysisDate@"
+#           seed_time: "@ANALYSIS_DATE@"
 #           category_variable:
 #             name: MetaData/longitude_latitude_pressure
 #           action:
@@ -10292,6 +10907,28 @@ cost function:
          # ------------------
          # wind (227)
          # ------------------
+         # Reject all obs not in variable type
+         - filter: Perform Action
+           where:
+           - variable: ObsValue/windEastward
+             value: is_not_valid
+           - variable: ObsValue/windNorthward
+             value: is_not_valid
+           where operator: or
+           action:
+             name: reduce obs space
+
+         # Reject all obs not in bufr type
+         - filter: Perform Action
+           where:
+           - variable: ObsType/windEastward
+             is_not_in: 227
+           - variable: ObsType/windNorthward
+             is_not_in: 227
+           where operator: or
+           action:
+             name: reduce obs space
+
          # Reject all obs with QualityMarker > 3
          - filter: RejectList
            filter variables:
@@ -10322,7 +10959,7 @@ cost function:
 #           - name: windNorthward
 #           min_spacing: PT90M
 #           tolerance: PT0H
-#           seed_time: "@analysisDate@"
+#           seed_time: "@ANALYSIS_DATE@"
 #           category_variable:
 #             name: MetaData/longitude_latitude_pressure
 #           action:
@@ -10645,6 +11282,22 @@ cost function:
          # ------------------
          # airTemperature (126)
          # ------------------
+         # Reject all obs not in variable type
+         - filter: Perform Action
+           where:
+           - variable: ObsValue/airTemperature
+             value: is_not_valid
+           action:
+             name: reduce obs space
+
+         # Reject all obs not in bufr type
+         - filter: Perform Action
+           where:
+           - variable: ObsType/airTemperature
+             is_not_in: 126
+           action:
+             name: reduce obs space
+
          # Reject all obs with QualityMarker > 3
          - filter: RejectList
            filter variables:
@@ -10673,7 +11326,7 @@ cost function:
 #           - name: airTemperature
 #           min_spacing: PT90M
 #           tolerance: PT0H
-#           seed_time: "@analysisDate@"
+#           seed_time: "@ANALYSIS_DATE@"
 #           category_variable:
 #             name: MetaData/longitude_latitude_pressure
 #           action:
@@ -10919,6 +11572,22 @@ cost function:
          # ------------------
          # airTemperature (180)
          # ------------------
+         # Reject all obs not in variable type
+         - filter: Perform Action
+           where:
+           - variable: ObsValue/airTemperature
+             value: is_not_valid
+           action:
+             name: reduce obs space
+
+         # Reject all obs not in bufr type
+         - filter: Perform Action
+           where:
+           - variable: ObsType/airTemperature
+             is_not_in: 180
+           action:
+             name: reduce obs space
+
          # Reject all obs with QualityMarker > 3
          - filter: RejectList
            filter variables:
@@ -10947,7 +11616,7 @@ cost function:
 #           - name: airTemperature
 #           min_spacing: PT90M
 #           tolerance: PT0H
-#           seed_time: "@analysisDate@"
+#           seed_time: "@ANALYSIS_DATE@"
 #           category_variable:
 #             name: MetaData/longitude_latitude_pressure
 #           action:
@@ -11193,6 +11862,22 @@ cost function:
          # ------------------
          # airTemperature (182)
          # ------------------
+         # Reject all obs not in variable type
+         - filter: Perform Action
+           where:
+           - variable: ObsValue/airTemperature
+             value: is_not_valid
+           action:
+             name: reduce obs space
+
+         # Reject all obs not in bufr type
+         - filter: Perform Action
+           where:
+           - variable: ObsType/airTemperature
+             is_not_in: 182
+           action:
+             name: reduce obs space
+
          # Reject all obs with QualityMarker > 3
          - filter: RejectList
            filter variables:
@@ -11221,7 +11906,7 @@ cost function:
 #           - name: airTemperature
 #           min_spacing: PT90M
 #           tolerance: PT0H
-#           seed_time: "@analysisDate@"
+#           seed_time: "@ANALYSIS_DATE@"
 #           category_variable:
 #             name: MetaData/longitude_latitude_pressure
 #           action:
@@ -11468,6 +12153,22 @@ cost function:
          # ------------------
          # airTemperature (183)
          # ------------------
+         # Reject all obs not in variable type
+         - filter: Perform Action
+           where:
+           - variable: ObsValue/airTemperature
+             value: is_not_valid
+           action:
+             name: reduce obs space
+
+         # Reject all obs not in bufr type
+         - filter: Perform Action
+           where:
+           - variable: ObsType/airTemperature
+             is_not_in: 183
+           action:
+             name: reduce obs space
+
          # Reject all obs with QualityMarker > 3
          - filter: RejectList
            filter variables:
@@ -11496,7 +12197,7 @@ cost function:
 #           - name: airTemperature
 #           min_spacing: PT90M
 #           tolerance: PT0H
-#           seed_time: "@analysisDate@"
+#           seed_time: "@ANALYSIS_DATE@"
 #           category_variable:
 #             name: MetaData/longitude_latitude_pressure
 #           action:
@@ -11742,6 +12443,22 @@ cost function:
          # ------------------
          # specificHumidity (180)
          # ------------------
+         # Reject all obs not in variable type
+         - filter: Perform Action
+           where:
+           - variable: ObsValue/specificHumidity
+             value: is_not_valid
+           action:
+             name: reduce obs space
+
+         # Reject all obs not in bufr type
+         - filter: Perform Action
+           where:
+           - variable: ObsType/specificHumidity
+             is_not_in: 180
+           action:
+             name: reduce obs space
+
          # Reject all obs with QualityMarker > 3
          - filter: RejectList
            filter variables:
@@ -11770,7 +12487,7 @@ cost function:
 #           - name: specificHumidity
 #           min_spacing: PT90M
 #           tolerance: PT0H
-#           seed_time: "@analysisDate@"
+#           seed_time: "@ANALYSIS_DATE@"
 #           category_variable:
 #             name: MetaData/longitude_latitude_pressure
 #           action:
@@ -12016,6 +12733,22 @@ cost function:
          # ------------------
          # specificHumidity (182)
          # ------------------
+         # Reject all obs not in variable type
+         - filter: Perform Action
+           where:
+           - variable: ObsValue/specificHumidity
+             value: is_not_valid
+           action:
+             name: reduce obs space
+
+         # Reject all obs not in bufr type
+         - filter: Perform Action
+           where:
+           - variable: ObsType/specificHumidity
+             is_not_in: 182
+           action:
+             name: reduce obs space
+
          # Reject all obs with QualityMarker > 3
          - filter: RejectList
            filter variables:
@@ -12044,7 +12777,7 @@ cost function:
 #           - name: specificHumidity
 #           min_spacing: PT90M
 #           tolerance: PT0H
-#           seed_time: "@analysisDate@"
+#           seed_time: "@ANALYSIS_DATE@"
 #           category_variable:
 #             name: MetaData/longitude_latitude_pressure
 #           action:
@@ -12291,6 +13024,22 @@ cost function:
          # ------------------
          # specificHumidity (183)
          # ------------------
+         # Reject all obs not in variable type
+         - filter: Perform Action
+           where:
+           - variable: ObsValue/specificHumidity
+             value: is_not_valid
+           action:
+             name: reduce obs space
+
+         # Reject all obs not in bufr type
+         - filter: Perform Action
+           where:
+           - variable: ObsType/specificHumidity
+             is_not_in: 183
+           action:
+             name: reduce obs space
+
          # Reject all obs with QualityMarker > 3
          - filter: RejectList
            filter variables:
@@ -12319,7 +13068,7 @@ cost function:
 #           - name: specificHumidity
 #           min_spacing: PT90M
 #           tolerance: PT0H
-#           seed_time: "@analysisDate@"
+#           seed_time: "@ANALYSIS_DATE@"
 #           category_variable:
 #             name: MetaData/longitude_latitude_pressure
 #           action:
@@ -12561,6 +13310,22 @@ cost function:
          # ------------------
          # stationPressure (180)
          # ------------------
+         # Reject all obs not in variable type
+         - filter: Perform Action
+           where:
+           - variable: ObsValue/stationPressure
+             value: is_not_valid
+           action:
+             name: reduce obs space
+
+         # Reject all obs not in bufr type
+         - filter: Perform Action
+           where:
+           - variable: ObsType/stationPressure
+             is_not_in: 180
+           action:
+             name: reduce obs space
+
          # Reject all obs with QualityMarker > 3
          - filter: RejectList
            filter variables:
@@ -12589,7 +13354,7 @@ cost function:
 #           - name: stationPressure
 #           min_spacing: PT90M
 #           tolerance: PT0H
-#           seed_time: "@analysisDate@"
+#           seed_time: "@ANALYSIS_DATE@"
 #           category_variable:
 #             name: MetaData/longitude_latitude_pressure
 #           action:
@@ -12845,6 +13610,28 @@ cost function:
          # ------------------
          # wind (280)
          # ------------------
+         # Reject all obs not in variable type
+         - filter: Perform Action
+           where:
+           - variable: ObsValue/windEastward
+             value: is_not_valid
+           - variable: ObsValue/windNorthward
+             value: is_not_valid
+           where operator: or
+           action:
+             name: reduce obs space
+
+         # Reject all obs not in bufr type
+         - filter: Perform Action
+           where:
+           - variable: ObsType/windEastward
+             is_not_in: 280
+           - variable: ObsType/windNorthward
+             is_not_in: 280
+           where operator: or
+           action:
+             name: reduce obs space
+
          # Reject all obs with QualityMarker > 3
          - filter: RejectList
            filter variables:
@@ -12875,7 +13662,7 @@ cost function:
 #           - name: windNorthward
 #           min_spacing: PT90M
 #           tolerance: PT0H
-#           seed_time: "@analysisDate@"
+#           seed_time: "@ANALYSIS_DATE@"
 #           category_variable:
 #             name: MetaData/longitude_latitude_pressure
 #           action:
@@ -13161,6 +13948,28 @@ cost function:
          # ------------------
          # wind (282)
          # ------------------
+         # Reject all obs not in variable type
+         - filter: Perform Action
+           where:
+           - variable: ObsValue/windEastward
+             value: is_not_valid
+           - variable: ObsValue/windNorthward
+             value: is_not_valid
+           where operator: or
+           action:
+             name: reduce obs space
+
+         # Reject all obs not in bufr type
+         - filter: Perform Action
+           where:
+           - variable: ObsType/windEastward
+             is_not_in: 282
+           - variable: ObsType/windNorthward
+             is_not_in: 282
+           where operator: or
+           action:
+             name: reduce obs space
+
          # Reject all obs with QualityMarker > 3
          - filter: RejectList
            filter variables:
@@ -13191,7 +14000,7 @@ cost function:
 #           - name: windNorthward
 #           min_spacing: PT90M
 #           tolerance: PT0H
-#           seed_time: "@analysisDate@"
+#           seed_time: "@ANALYSIS_DATE@"
 #           category_variable:
 #             name: MetaData/longitude_latitude_pressure
 #           action:
@@ -13478,6 +14287,28 @@ cost function:
          # ------------------
          # wind (284)
          # ------------------
+         # Reject all obs not in variable type
+         - filter: Perform Action
+           where:
+           - variable: ObsValue/windEastward
+             value: is_not_valid
+           - variable: ObsValue/windNorthward
+             value: is_not_valid
+           where operator: or
+           action:
+             name: reduce obs space
+
+         # Reject all obs not in bufr type
+         - filter: Perform Action
+           where:
+           - variable: ObsType/windEastward
+             is_not_in: 284
+           - variable: ObsType/windNorthward
+             is_not_in: 284
+           where operator: or
+           action:
+             name: reduce obs space
+
          # Reject all obs with QualityMarker > 3
          - filter: RejectList
            filter variables:
@@ -13508,7 +14339,7 @@ cost function:
 #           - name: windNorthward
 #           min_spacing: PT90M
 #           tolerance: PT0H
-#           seed_time: "@analysisDate@"
+#           seed_time: "@ANALYSIS_DATE@"
 #           category_variable:
 #             name: MetaData/longitude_latitude_pressure
 #           action:
@@ -13794,6 +14625,28 @@ cost function:
          # ------------------
          # wind (224)
          # ------------------
+         # Reject all obs not in variable type
+         - filter: Perform Action
+           where:
+           - variable: ObsValue/windEastward
+             value: is_not_valid
+           - variable: ObsValue/windNorthward
+             value: is_not_valid
+           where operator: or
+           action:
+             name: reduce obs space
+
+         # Reject all obs not in bufr type
+         - filter: Perform Action
+           where:
+           - variable: ObsType/windEastward
+             is_not_in: 224
+           - variable: ObsType/windNorthward
+             is_not_in: 224
+           where operator: or
+           action:
+             name: reduce obs space
+
          # Reject all obs with QualityMarker > 3
          - filter: RejectList
            filter variables:
@@ -13824,7 +14677,7 @@ cost function:
 #           - name: windNorthward
 #           min_spacing: PT90M
 #           tolerance: PT0H
-#           seed_time: "@analysisDate@"
+#           seed_time: "@ANALYSIS_DATE@"
 #           category_variable:
 #             name: MetaData/longitude_latitude_pressure
 #           action:
@@ -14149,6 +15002,28 @@ cost function:
          # ------------------
          # wind (245)
          # ------------------
+         # Reject all obs not in variable type
+         - filter: Perform Action
+           where:
+           - variable: ObsValue/windEastward
+             value: is_not_valid
+           - variable: ObsValue/windNorthward
+             value: is_not_valid
+           where operator: or
+           action:
+             name: reduce obs space
+
+         # Reject all obs not in bufr type
+         - filter: Perform Action
+           where:
+           - variable: ObsType/windEastward
+             is_not_in: 245
+           - variable: ObsType/windNorthward
+             is_not_in: 245
+           where operator: or
+           action:
+             name: reduce obs space
+
          # Time window filter
          - filter: Bounds Check
            udescriptor: "time_window_check"
@@ -14175,7 +15050,7 @@ cost function:
 #           - name: windNorthward
 #           min_spacing: PT90M
 #           tolerance: PT0H
-#           seed_time: "@analysisDate@"
+#           seed_time: "@ANALYSIS_DATE@"
 #           category_variable:
 #             name: MetaData/longitude_latitude_pressure
 #           where:
@@ -14556,6 +15431,28 @@ cost function:
          # ------------------
          # wind (245)
          # ------------------
+         # Reject all obs not in variable type
+         - filter: Perform Action
+           where:
+           - variable: ObsValue/windEastward
+             value: is_not_valid
+           - variable: ObsValue/windNorthward
+             value: is_not_valid
+           where operator: or
+           action:
+             name: reduce obs space
+
+         # Reject all obs not in bufr type
+         - filter: Perform Action
+           where:
+           - variable: ObsType/windEastward
+             is_not_in: 245
+           - variable: ObsType/windNorthward
+             is_not_in: 245
+           where operator: or
+           action:
+             name: reduce obs space
+
          # Time window filter
          - filter: Bounds Check
            udescriptor: "time_window_check"
@@ -14582,7 +15479,7 @@ cost function:
 #           - name: windNorthward
 #           min_spacing: PT90M
 #           tolerance: PT0H
-#           seed_time: "@analysisDate@"
+#           seed_time: "@ANALYSIS_DATE@"
 #           category_variable:
 #             name: MetaData/longitude_latitude_pressure
 #           where:
@@ -14963,6 +15860,28 @@ cost function:
          # ------------------
          # wind (246)
          # ------------------
+         # Reject all obs not in variable type
+         - filter: Perform Action
+           where:
+           - variable: ObsValue/windEastward
+             value: is_not_valid
+           - variable: ObsValue/windNorthward
+             value: is_not_valid
+           where operator: or
+           action:
+             name: reduce obs space
+
+         # Reject all obs not in bufr type
+         - filter: Perform Action
+           where:
+           - variable: ObsType/windEastward
+             is_not_in: 246
+           - variable: ObsType/windNorthward
+             is_not_in: 246
+           where operator: or
+           action:
+             name: reduce obs space
+
          # Time window filter
          - filter: Bounds Check
            udescriptor: "time_window_check"
@@ -14989,7 +15908,7 @@ cost function:
 #           - name: windNorthward
 #           min_spacing: PT90M
 #           tolerance: PT0H
-#           seed_time: "@analysisDate@"
+#           seed_time: "@ANALYSIS_DATE@"
 #           category_variable:
 #             name: MetaData/longitude_latitude_pressure
 #           where:
@@ -15119,7 +16038,7 @@ cost function:
            action:
              name: reject
 
-         # Reject obs with pressure < 150 mb and  > 400 mb
+         # Reject obs with pressure < 150 mb and > 300 mb
          - filter: Bounds Check
            udescriptor: "bounds_check_pressure"
            filter variables:
@@ -15128,7 +16047,7 @@ cost function:
            test variables:
            - name: MetaData/pressure
            minvalue: 15000.
-           maxvalue: 40000.
+           maxvalue: 30000.
            where:
            - variable: ObsType/windEastward
              is_in: 246
@@ -15336,6 +16255,28 @@ cost function:
          # ------------------
          # wind (246)
          # ------------------
+         # Reject all obs not in variable type
+         - filter: Perform Action
+           where:
+           - variable: ObsValue/windEastward
+             value: is_not_valid
+           - variable: ObsValue/windNorthward
+             value: is_not_valid
+           where operator: or
+           action:
+             name: reduce obs space
+
+         # Reject all obs not in bufr type
+         - filter: Perform Action
+           where:
+           - variable: ObsType/windEastward
+             is_not_in: 246
+           - variable: ObsType/windNorthward
+             is_not_in: 246
+           where operator: or
+           action:
+             name: reduce obs space
+
          # Time window filter
          - filter: Bounds Check
            udescriptor: "time_window_check"
@@ -15362,7 +16303,7 @@ cost function:
 #           - name: windNorthward
 #           min_spacing: PT90M
 #           tolerance: PT0H
-#           seed_time: "@analysisDate@"
+#           seed_time: "@ANALYSIS_DATE@"
 #           category_variable:
 #             name: MetaData/longitude_latitude_pressure
 #           where:
@@ -15492,7 +16433,7 @@ cost function:
            action:
              name: reject
 
-         # Reject obs with pressure < 150 mb and  > 400 mb
+         # Reject obs with pressure < 150 mb and > 300 mb
          - filter: Bounds Check
            udescriptor: "bounds_check_pressure"
            filter variables:
@@ -15501,7 +16442,7 @@ cost function:
            test variables:
            - name: MetaData/pressure
            minvalue: 15000.
-           maxvalue: 40000.
+           maxvalue: 30000.
            where:
            - variable: ObsType/windEastward
              is_in: 246
@@ -15706,6 +16647,28 @@ cost function:
          # ------------------
          # wind (247)
          # ------------------
+         # Reject all obs not in variable type
+         - filter: Perform Action
+           where:
+           - variable: ObsValue/windEastward
+             value: is_not_valid
+           - variable: ObsValue/windNorthward
+             value: is_not_valid
+           where operator: or
+           action:
+             name: reduce obs space
+
+         # Reject all obs not in bufr type
+         - filter: Perform Action
+           where:
+           - variable: ObsType/windEastward
+             is_not_in: 247
+           - variable: ObsType/windNorthward
+             is_not_in: 247
+           where operator: or
+           action:
+             name: reduce obs space
+
          # Accept, reject, or passivate (monitor)
          - filter: Perform Action
            udescriptor: "iuse_check"
@@ -16107,6 +17070,28 @@ cost function:
          # ------------------
          # wind (247)
          # ------------------
+         # Reject all obs not in variable type
+         - filter: Perform Action
+           where:
+           - variable: ObsValue/windEastward
+             value: is_not_valid
+           - variable: ObsValue/windNorthward
+             value: is_not_valid
+           where operator: or
+           action:
+             name: reduce obs space
+
+         # Reject all obs not in bufr type
+         - filter: Perform Action
+           where:
+           - variable: ObsType/windEastward
+             is_not_in: 247
+           - variable: ObsType/windNorthward
+             is_not_in: 247
+           where operator: or
+           action:
+             name: reduce obs space
+
          # Accept, reject, or passivate (monitor)
          - filter: Perform Action
            udescriptor: "iuse_check"
@@ -18148,10 +19133,66 @@ cost function:
                ratio for small dataset: 2.0
            output file: data/satbias_out/abi_g16.satbias_cov.nc
 
-  # Observation Filters (QC)
-  # ------------------------
+       # ----------------------------------------
+       # Observation Filters g16 (QC)
+       # ----------------------------------------
+       # Observation Pre Filters (QC): steps 0-6
+       # -----------------------------------------
        obs pre filters:
-       # Satellite Zenith Angle Check
+       # -----------------------------------------
+       # Step 0: Create Diagnostic Flags
+       # -------------------------------
+       - filter: Create Diagnostic Flags
+         filter variables:
+         - name: brightnessTemperature
+           channels: *abi_g16_channels
+         flags:
+         - name: ZenithAngleCheck
+           initial value: false
+           force reinitialization: false
+         - name: Thinning
+           initial value: false
+           force reinitialization: false
+         - name: GeoDomainCheck
+           initial value: false
+           force reinitialization: false
+         - name: CloudFractionCheck
+           initial value: false
+           force reinitialization: false
+         - name: CloudFractionCheck_channel_10
+           initial value: false
+           force reinitialization: false
+         - name: SplitWindowCheck_channel_10
+           initial value: false
+           force reinitialization: false
+         - name: ClearSkyStdCheck
+           initial value: false
+           force reinitialization: false
+         - name: ClearSkyStdCheck_channel_10
+           initial value: false
+           force reinitialization: false
+         - name: BTrangeCheck
+           initial value: false
+           force reinitialization: false
+         - name: CloudDetectMinResidualIR
+           initial value: false
+           force reinitialization: false
+         - name: SurfaceTempJacobianCheck
+           initial value: false
+           force reinitialization: false
+         - name: GrossCheck
+           initial value: false
+           force reinitialization: false
+         - name: NearSSTRetCheckIR
+           initial value: false
+           force reinitialization: false
+         - name: UseflagCheck
+           initial value: false
+           force reinitialization: false
+
+       # ---------------------------------------------------------------------------------------------------
+       # Step 1 : Satellite Zenith Angle check: remove observations with zenith angle larger than 65 degree
+       # ----------------------------------------------------------------------------------------------------
        - filter: Bounds Check
          filter variables:
          - name: brightnessTemperature
@@ -18159,26 +19200,17 @@ cost function:
          test variables:
          - name: MetaData/sensorZenithAngle
          maxvalue: 65.
-         action:
-           name: reduce obs space
-       # Data Thinning
-       - filter: Gaussian Thinning
-         filter variables:
-         - name: brightnessTemperature
-           channels: *abi_g16_channels
-         #horizontal_mesh: 145
-         horizontal_mesh: 60
-         use_reduced_horizontal_grid: true
-         distance_norm: maximum
-         time_mesh: '@THINNING_TIME_MESH@'
-         time_min: '@THINNING_TIME_MIN@'
-         time_max: '@THINNING_TIME_MAX@'
-         #  round_horizontal_bin_count_to_nearest: true
-         #  partition_longitude_bins_using_mesh: true
          actions:
-           - name: reduce obs space
+         - name: set
+           flag: ZenithAngleCheck
+         #- name: reject
+         - name: reduce obs space
 
-       # from read_abi: Reject when cloud fraction is more than 30
+
+       # ---------------------------------------------------------------------------------------------------------------------------
+       # Step 2 : Initial cloud fraction check: remove observations when cloud fraction (from channel 8 or others) is more than 30%
+       #          this initial cloud fraction is applied to all 10 channels
+       # ----------------------------------------------------------------------------------------------------------------------------
        - filter: Domain Check
          filter variables:
          - name: brightnessTemperature
@@ -18186,28 +19218,106 @@ cost function:
          where:
          - variable:
              name: MetaData/cloudAmount
-             channels: 8
            maxvalue: 30.
-         action:
-           name: reduce obs space
+         actions:
+         - name: set
+           flag: CloudFractionCheck
+           ignore: rejected observations
+         - name: reduce obs space
+         #- name: reject
 
-       # from read_abi: WV Channels 8-10 scene consistency check SDTB>1.3
-       - filter: Domain Check
+       # --------------------------------------------------------------------------------------------------------------
+       # Step 3 : Initial StdDev check: reject observations for all chennales when SDTB > 1.3 from channels 8/9/10 (or)
+       #          This initial stdDev check is applied to all 10 channels based on SDTB from channel 8 or 9 or 10
+       #          max_exclusive is false (default) sincce STDB=1.3 will not be removed
+       # ---------------------------------------------------------------------------------------------------------------
+       - filter: Bounds Check
          filter variables:
          - name: brightnessTemperature
            channels: *abi_g16_channels
-         where:
-         - variable:
-             name: ClearSkyStdDev/brightnessTemperature
-             channels: 8-10
-           maxvalue: 1.3
-           max_exclusive: true
-         action:
-           name: reduce obs space
+         test variables:
+         - name: ClearSkyStdDev/brightnessTemperature
+           channels: 8-10
+         flag all filter variables if any test variable is out of bounds: true
+         maxvalue: 1.3
+         #max_exclusive: true
+         actions:
+           - name: set
+             flag: ClearSkyStdCheck
+             ignore: rejected observations
+           #- name: reject
+           - name: reduce obs space
 
+       # ---------------------------------------------------------------------------------------------------
+       # Step 4 :  BT range check (sanity check)
+       # ----------------------------------------------------------------------------------------------------
+       - filter: Bounds Check
+         filter variables:
+         - name: brightnessTemperature
+           channels: *abi_g16_channels
+         minvalue: 0.0
+         maxvalue: 1000.0
+         actions:
+         - name: set
+           flag: BTrangeCheck
+           ignore: rejected observations
+         #- name: reject
+         - name: reduce obs space
 
+       # ---------------------------------------------------------------------------------------------------
+       # Step 5 : Create a variable of thinning priority based on cloudFree and StdDev from ABI channel 13
+       # ----------------------------------------------------------------------------------------------------
+       - filter: Variable Assignment
+         assignments:
+         - name: DerivedMetaData/thinning_priority
+           type: float
+           function:
+             name: ObsFunction/LinearCombination
+             options:
+               variables:
+               - name: MetaData/cloudFree
+               - name: ClearSkyStdDev/brightnessTemperature
+                 channels: 13
+               coefficients: [0.1, -10.0]
+               #coefficients: [10, -1.0]
+               constant_term: 100.0
+
+       # ---------------------------------------------------------------------------------------------------
+       # Step 6 : Data Thinning (spatial and temporal thinning)
+       # ----------------------------------------------------------------------------------------------------
+       - filter: Gaussian Thinning
+         filter variables:
+         - name: brightnessTemperature
+           channels: *abi_g16_channels
+         #horizontal_mesh: 145
+         horizontal_mesh: 60
+         use_reduced_horizontal_grid: true
+         # Geographic Consistency Parameters
+         round_horizontal_bin_count_to_nearest: true
+         partition_longitude_bins_using_mesh: true
+         # Spatiotemporal Selection
+         distance_norm: maximum
+         #distance_norm: geodesic
+         seed_time: '@analysisDate@'
+         time_mesh: '@THINNING_TIME_MESH@'
+         time_min: '@THINNING_TIME_MIN@'
+         time_max: '@THINNING_TIME_MAX@'
+         priority_variable: DerivedMetaData/thinning_priority
+         #priority_variable: MetaData/cloudFree
+         actions:
+         - name: set
+           flag: Thinning
+           ignore: rejected observations
+         - name: reduce obs space
+         #- name: reject
+
+       # ---------------------------------------
+       # Observation prior Filters (steps 7-9)
+       # ----------------------------------------
        obs prior filters:
-       # Initial obs error assignment
+       # ------------------------------------
+       # Step 7 : Initial obs erro assignment
+       # -----------------------------------
        - filter: Perform Action
          filter variables:
          - name: brightnessTemperature
@@ -18216,7 +19326,14 @@ cost function:
            name: assign error
            error parameter vector: *abi_g16_error
 
-       # Surface flag assignment from geoval
+       # --------------------------------------------------------
+       # Step 8 : Creat surface flag assignment from Geovals
+       # water:0
+       # land: 1
+       # ice:  2
+       # Snow: 3
+       # Mixed/Other: 4.
+       # ----------------------------------------------------------
        - filter: Variable Assignment
          assignments:
          - name: DerivedMetaData/surfaceFlag
@@ -18248,7 +19365,9 @@ cost function:
                    minvalue: 0.99
                  value: 3
 
-       # Surface Parameter assignment from geovals
+       # --------------------------------------------------------
+       # Step 9: Surface Parameter assignment from geovals
+       # ----------------------------------------------------------
        - filter: Variable Assignment
          assignments:
          - name: DerivedMetaData/surfaceParam
@@ -18280,8 +19399,14 @@ cost function:
                    minvalue: 0.99
                  value: 15
 
+
+       # ----------------------------------------
+       # Observation post Filters (steps 10-20)
+       # ----------------------------------------
        obs post filters:
-       # Regional domain check to remove data outside of model domain
+       # ----------------------------------------------------------------------------------------
+       # Step 10: online geo-domain Check, rejecting observations outside of regional MPAS domain
+       # ----------------------------------------------------------------------------------------
        - filter: Bounds Check
          filter variables:
          - name: brightnessTemperature
@@ -18291,8 +19416,15 @@ cost function:
            flag all filter variables if any test variable is out of bounds: true
            minvalue: 0.0
            maxvalue: 0.5
+         actions:
+           - name: set
+             flag: GeoDomainCheck
+           - name: reject
 
-       #Toss data if the hofx is missing or outside of range
+       # ---------------------------------------------------------------------------------------------------
+       # Step 11 :  hofx/BT range check (sanity check)
+       # Toss data if the hofx is missing or outside of range
+       # ----------------------------------------------------------------------------------------------------
        - filter: Domain Check
          filter variables:
          - name: brightnessTemperature
@@ -18307,8 +19439,10 @@ cost function:
          action:
            name: reject
 
-       # Surface type check
-       # Toss channels 7,11-16 over land
+       # -----------------------------------------------------
+       # Step 12 :  Surface type check
+       # Step 12a: Toss all channels 7, 11-16  data over land
+       # ------------------------------------------------------
        - filter: RejectList
          filter variables:
          - name: brightnessTemperature
@@ -18318,7 +19452,9 @@ cost function:
              name: GeoVaLs/land_area_fraction
            minvalue: 0.99
 
-       # Toss all channels data over snow
+       # -------------------------------------------
+       # Setp 12b: Toss all channels data over snow
+       # --------------------------------------------
        - filter: RejectList
          filter variables:
          - name: brightnessTemperature
@@ -18328,7 +19464,9 @@ cost function:
              name: GeoVaLs/surface_snow_area_fraction
            minvalue: 0.99
 
-       # Toss all channels data over ice
+       # ---------------------------------------------------------------------------------
+       # Step 12c: Toss all channels data over ice (reject if ice_area_fraction>=0.99)
+       # ---------------------------------------------------------------------------------
        - filter: RejectList
          filter variables:
          - name: brightnessTemperature
@@ -18338,7 +19476,9 @@ cost function:
              name: GeoVaLs/ice_area_fraction
            minvalue: 0.99
 
-       # Toss all channels data over mixed surface
+       # --------------------------------------------------------
+       # Step 12d:  Toss all channels data over mixed surface
+       # --------------------------------------------------------
        - filter: RejectList
          filter variables:
          - name: brightnessTemperature
@@ -18361,17 +19501,11 @@ cost function:
            maxvalue: 0.99
            max_exclusive: true
 
-       # BT range check
-       - filter: Bounds Check
-         filter variables:
-         - name: brightnessTemperature
-           channels: *abi_g16_channels
-         minvalue: 0.0
-         maxvalue: 1000.0
-         action:
-           name: reject
 
-       # Model top transmittance check
+       # -----------------------------------------------------------------------------------------------------------------------------------------------
+       # Step 13: Observation Error inflation: Model top Transmittance Check
+       # This obsfunction calculates the observation error inflation factor for satellite radiances as a function of model top-to-space transmittance.
+       # ------------------------------------------------------------------------------------------------------------------------------------------------
        - filter: Perform Action
          filter variables:
          - name: brightnessTemperature
@@ -18384,7 +19518,9 @@ cost function:
              options:
                channels: *abi_g16_channels
 
-       # Cloud detection
+       # --------------------------------------------------
+       # Step 14:  MinResidual Cloud Detection Check
+       # ---------------------------------------------------
        - filter: Bounds Check
          filter variables:
          - name: brightnessTemperature
@@ -18399,10 +19535,16 @@ cost function:
              obserr_dtempf: [0.5, 2.0, 4.0, 2.0, 4.0]
              error parameter vector: *abi_g16_error
          maxvalue: 1.0e-12
-         action:
-           name: reject
+         actions:
+           - name: set
+             flag: CloudDetectMinResidualIR
+             ignore: rejected observations
+           - name: reject
 
-       # Scene Consistency Check based on ch13 (10.8 micron)
+       # ---------------------------------------------------------------------------------------------------------------------
+       # Step 15: Second StdDev check: Scene Consistency Check based on StdDev of ch13 (10.8 micron) for chanenel 7, 10-16
+       # This step would remove more data for channel 10
+       # ---------------------------------------------------------------------------------------------------------------------
        - filter: Domain Check
          filter variables:
          - name: brightnessTemperature
@@ -18413,15 +19555,23 @@ cost function:
              channels: 13
            maxvalue: 0.5
            max_exclusive: true
+         actions:
+           - name: set
+             flag: ClearSkyStdCheck_channel_10
+             ignore: rejected observations
+           - name: reject
 
-       # Aadjust Channels 8-10 varinv according to ch8 BT standard deviation
+       # -------------------------------------------------------------------------------------------------------------
+       # Step 16: Observation Error inflation: adjust error for channels 8-10 according to ch8 BT standard deviation
+       # --------------------------------------------------------------------------------------------------------------
        - filter: Perform Action
          filter variables:
          - name: brightnessTemperature
            channels: 8-10
          where:
          - variable:
-             name: ClearSkyStdDev/brightnessTemperature_8
+             name: ClearSkyStdDev/brightnessTemperature
+             channels: 8
            maxvalue: 0.5
            minvalue: 0.4
            min_exclusive: true
@@ -18435,7 +19585,8 @@ cost function:
            channels: 8-10
          where:
          - variable:
-             name: ClearSkyStdDev/brightnessTemperature_8
+             name: ClearSkyStdDev/brightnessTemperature
+             channels: 8
            maxvalue: 0.6
            #max_exclusive: true
            minvalue: 0.5
@@ -18450,7 +19601,8 @@ cost function:
            channels: 8-10
          where:
          - variable:
-             name: ClearSkyStdDev/brightnessTemperature_8
+             name: ClearSkyStdDev/brightnessTemperature
+             channels: 8
            maxvalue: 0.7
            #max_exclusive: true
            minvalue: 0.6
@@ -18465,14 +19617,20 @@ cost function:
            channels: 8-10
          where:
          - variable:
-             name: ClearSkyStdDev/brightnessTemperature_8
+             name: ClearSkyStdDev/brightnessTemperature
+             channels: 8
            minvalue: 0.7
            min_exclusive: true
          action:
            name: inflate error
            inflation factor: 1.5199
 
-       # Near SST Check
+       # -------------------------------------------------------------------------------------------------------------------------------------------------------
+       # Step 17: NSST Retrieval Check
+       # This obsFunction is designed to perform QC using retrieved near-sea-surface temperature (NSST) from Infrared radiances.
+       # The output of this obsFunction is the default JEDI QC flags: 0 = channel is retained for assimilation; 1 = channel is not retained for assimilation.
+       # The brightness_temperature is rejected if the QC flags from this ObsFunction output value is bigger than maxvalue=1.0e-12.
+       # ---------------------------------------------------------------------------------------------------------------------------------------------------------
        - filter: Bounds Check
          filter variables:
          - name: brightnessTemperature
@@ -18483,11 +19641,21 @@ cost function:
            options:
              channels: *abi_g16_channels
              use_flag: *abi_g16_use_flag
+             sensor: abi_g16
+             obserr_demisf: [0.01, 0.02, 0.03, 0.02, 0.03]
+             obserr_dtempf: [0.50, 2.00, 4.00, 2.00, 4.00]
          maxvalue: 1.0e-12
-         action:
-           name: reject
+         actions:
+           - name: set
+             flag: NearSSTRetCheckIR
+             ignore: rejected observations
+           - name: reject
 
-       # Surface Jacobian
+       # ----------------------------------------------------------------------------------------------------------
+       # Step 18: Error inflation: Surface Jacobians Check
+       # This obsFunction is designed to compute observation error inflation factor for brightness temperature as
+       # a function of weighted surface temperature jacobian and surface emissivity jacobian.
+       # -----------------------------------------------------------------------------------------------------------
        - filter: Perform Action
          filter variables:
          - name: brightnessTemperature
@@ -18499,11 +19667,15 @@ cost function:
              channels: *abi_g16_channels
              options:
                channels: *abi_g16_channels
-               sensor: abi_g16
                obserr_demisf: [0.01, 0.02, 0.03, 0.02, 0.03]
                obserr_dtempf: [0.5, 2.0, 4.0, 2.0, 4.0]
+               sensor: abi_g16
 
-       # Channels 7, 10-16 Cloud fraction >2
+       # ----------------------------------------------------------------------------------------------------------
+       # Step 19: additional cloud fraction check for channels 7, 10-16
+       # remove when cloud fraction > 2
+       # this step would remove more data from channel 8
+       # -----------------------------------------------------------------------------------------------------------
        - filter: Domain Check
          filter variables:
          - name: brightnessTemperature
@@ -18512,11 +19684,19 @@ cost function:
          - variable:
              name: MetaData/cloudAmount
            maxvalue: 2
+         actions:
+         - name: set
+           flag: CloudFractionCheck_channel_10
+           ignore: rejected observations
+         - name: reject
 
-       # Variable assignment, OmF non bias corrected
+       # ----------------------------------------------------------------------------------------------------------
+       # Step 20: split window check for channels 7, 10-16
+       # Step 20a: Variable assignment, OmF non bias corrected
+       # -----------------------------------------------------------------------------------------------------------
        - filter: Variable Assignment
          assignments:
-         - name: OmFNBC@DerivedMetaData
+         - name: DerivedMetaData/OmFNBC
            type: float
            function:
              name: ObsFunction/Arithmetic
@@ -18536,19 +19716,28 @@ cost function:
                  channels: 14
                coefs: [1, -1, 1, -1, 1, -1]
 
-       # Use split window chns to remove opaque clouds
-       # Toss Channels 7, 10-16, when OmFNBC < -0.75
-       - filter: Domain Check
+       # ----------------------------------------------------------------------------------------------------------------
+       # Step 20b: Use split window chns to remove opaque clouds
+       #           reject observatiohs for Channels 7, 10-16, when OmFNBC =< -0.75 min_exclusive:true is uesed to reject
+       #           min_exclusive:true is uesed to reject when omFNBC= -0.75
+       # ------------------------------------------------------------------------------------------------------------------
+       - filter: Bounds Check
          filter variables:
          - name: brightnessTemperature
            channels: 7, 10-16
-         where:
-         - variable:
-             name: OmFNBC@DerivedMetaData
-           minvalue: -0.75
-           max_exclusive: true
+         test variables:
+         - name: DerivedMetaData/OmFNBC
+         minvalue: -0.75
+         min_exclusive: true
+         actions:
+           - name: set
+             flag: SplitWindowCheck_channel_10
+             ignore: rejected observations
+           - name: reject
 
-       # Final gross check
+       # ----------------------------------
+       # Step 21: Gross check
+       # ----------------------------------
        - filter: Background Check
          filter variables:
          - name: brightnessTemperature
@@ -18562,7 +19751,8 @@ cost function:
              obserr_bound_latitude:
                name: ObsFunction/ObsErrorFactorLatRad
                options:
-                 latitude_parameters: [0.0, 0.0, 0.0, 0.0]
+                 #latitude_parameters: [0.0, 0.0, 0.0, 0.0]
+                 latitude_parameters: [25.0, 0.5, 0.04, 1.0]
              obserr_bound_transmittop:
                name: ObsFunction/ObsErrorFactorTransmitTopRad
                channels: *abi_g16_channels
@@ -18570,10 +19760,32 @@ cost function:
                  channels: *abi_g16_channels
              obserr_bound_max: *abi_g16_obserr_bound_max
              error parameter vector: *abi_g16_error
-         action:
-           name: reject
-  # Observation Space (I/O)
-  # -----------------------
+         actions:
+           - name: set
+             flag: GrossCheck
+             ignore: rejected observations
+           - name: reject
+
+       # -------------------------------
+       # Step 22: Useflag Check
+       # -------------------------------
+       - filter: Bounds Check
+         filter variables:
+         - name: brightnessTemperature
+           channels: *abi_g16_channels
+         test variables:
+         - name: ObsFunction/ChannelUseflagCheckRad
+           channels: *abi_g16_channels
+           options:
+             channels: *abi_g16_channels
+             use_flag: *abi_g16_use_flag
+         minvalue: 1.0e-12
+         actions:
+           - name: set
+             flag: UseflagCheck
+             ignore: rejected observations
+           - name: reject
+
      - obs space:
          name: abi_g18
          _anchor_channels: &abi_g18_channels 7-16
@@ -18656,10 +19868,66 @@ cost function:
                ratio for small dataset: 2.0
            output file: data/satbias_out/abi_g18.satbias_cov.nc
 
-  # Observation Filters (QC)
-  # ------------------------
+       # ----------------------------------------
+       # Observation Filters g18 (QC)
+       # ----------------------------------------
+       # Observation Pre Filters (QC): steps 0-6
+       # -----------------------------------------
        obs pre filters:
-       # Satellite Zenith Angle Check
+       # -----------------------------------------
+       # Step 0: Create Diagnostic Flags
+       # -------------------------------
+       - filter: Create Diagnostic Flags
+         filter variables:
+         - name: brightnessTemperature
+           channels: *abi_g18_channels
+         flags:
+         - name: ZenithAngleCheck
+           initial value: false
+           force reinitialization: false
+         - name: Thinning
+           initial value: false
+           force reinitialization: false
+         - name: GeoDomainCheck
+           initial value: false
+           force reinitialization: false
+         - name: CloudFractionCheck
+           initial value: false
+           force reinitialization: false
+         - name: CloudFractionCheck_channel_10
+           initial value: false
+           force reinitialization: false
+         - name: SplitWindowCheck_channel_10
+           initial value: false
+           force reinitialization: false
+         - name: ClearSkyStdCheck
+           initial value: false
+           force reinitialization: false
+         - name: ClearSkyStdCheck_channel_10
+           initial value: false
+           force reinitialization: false
+         - name: BTrangeCheck
+           initial value: false
+           force reinitialization: false
+         - name: CloudDetectMinResidualIR
+           initial value: false
+           force reinitialization: false
+         - name: SurfaceTempJacobianCheck
+           initial value: false
+           force reinitialization: false
+         - name: GrossCheck
+           initial value: false
+           force reinitialization: false
+         - name: NearSSTRetCheckIR
+           initial value: false
+           force reinitialization: false
+         - name: UseflagCheck
+           initial value: false
+           force reinitialization: false
+
+       # ---------------------------------------------------------------------------------------------------
+       # Step 1 : Satellite Zenith Angle check: remove observations with zenith angle larger than 65 degree
+       # ----------------------------------------------------------------------------------------------------
        - filter: Bounds Check
          filter variables:
          - name: brightnessTemperature
@@ -18667,26 +19935,17 @@ cost function:
          test variables:
          - name: MetaData/sensorZenithAngle
          maxvalue: 65.
-         action:
-           name: reduce obs space
-       # Data Thinning
-       - filter: Gaussian Thinning
-         filter variables:
-         - name: brightnessTemperature
-           channels: *abi_g18_channels
-         #horizontal_mesh: 145
-         horizontal_mesh: 60
-         use_reduced_horizontal_grid: true
-         distance_norm: maximum
-         time_mesh: '@THINNING_TIME_MESH@'
-         time_min: '@THINNING_TIME_MIN@'
-         time_max: '@THINNING_TIME_MAX@'
-         #  round_horizontal_bin_count_to_nearest: true
-         #  partition_longitude_bins_using_mesh: true
          actions:
-           - name: reduce obs space
+         - name: set
+           flag: ZenithAngleCheck
+         #- name: reject
+         - name: reduce obs space
 
-       # from read_abi: Reject when cloud fraction is more than 30
+
+       # ---------------------------------------------------------------------------------------------------------------------------
+       # Step 2 : Initial cloud fraction check: remove observations when cloud fraction (from channel 8 or others) is more than 30%
+       #          this initial cloud fraction is applied to all 10 channels
+       # ----------------------------------------------------------------------------------------------------------------------------
        - filter: Domain Check
          filter variables:
          - name: brightnessTemperature
@@ -18694,27 +19953,106 @@ cost function:
          where:
          - variable:
              name: MetaData/cloudAmount
-             channels: 8
            maxvalue: 30.
-         action:
-           name: reduce obs space
+         actions:
+         - name: set
+           flag: CloudFractionCheck
+           ignore: rejected observations
+         - name: reduce obs space
+         #- name: reject
 
-       # from read_abi: WV Channels 8-10 scene consistency check SDTB>1.3
-       - filter: Domain Check
+       # --------------------------------------------------------------------------------------------------------------
+       # Step 3 : Initial StdDev check: reject observations for all chennales when SDTB > 1.3 from channels 8/9/10 (or)
+       #          This initial stdDev check is applied to all 10 channels based on SDTB from channel 8 or 9 or 10
+       #          max_exclusive is false (default) sincce STDB=1.3 will not be removed
+       # ---------------------------------------------------------------------------------------------------------------
+       - filter: Bounds Check
          filter variables:
          - name: brightnessTemperature
            channels: *abi_g18_channels
-         where:
-         - variable:
-             name: ClearSkyStdDev/brightnessTemperature
-             channels: 8-10
-           maxvalue: 1.3
-           max_exclusive: true
-         action:
-           name: reduce obs space
+         test variables:
+         - name: ClearSkyStdDev/brightnessTemperature
+           channels: 8-10
+         flag all filter variables if any test variable is out of bounds: true
+         maxvalue: 1.3
+         #max_exclusive: true
+         actions:
+           - name: set
+             flag: ClearSkyStdCheck
+             ignore: rejected observations
+           #- name: reject
+           - name: reduce obs space
 
+       # ---------------------------------------------------------------------------------------------------
+       # Step 4 :  BT range check (sanity check)
+       # ----------------------------------------------------------------------------------------------------
+       - filter: Bounds Check
+         filter variables:
+         - name: brightnessTemperature
+           channels: *abi_g18_channels
+         minvalue: 0.0
+         maxvalue: 1000.0
+         actions:
+         - name: set
+           flag: BTrangeCheck
+           ignore: rejected observations
+         #- name: reject
+         - name: reduce obs space
+
+       # ---------------------------------------------------------------------------------------------------
+       # Step 5 : Create a variable of thinning priority based on cloudFree and StdDev from ABI channel 13
+       # ----------------------------------------------------------------------------------------------------
+       - filter: Variable Assignment
+         assignments:
+         - name: DerivedMetaData/thinning_priority
+           type: float
+           function:
+             name: ObsFunction/LinearCombination
+             options:
+               variables:
+               - name: MetaData/cloudFree
+               - name: ClearSkyStdDev/brightnessTemperature
+                 channels: 13
+               coefficients: [0.1, -10.0]
+               #coefficients: [10, -1.0]
+               constant_term: 100.0
+
+       # ---------------------------------------------------------------------------------------------------
+       # Step 6 : Data Thinning (spatial and temporal thinning)
+       # ----------------------------------------------------------------------------------------------------
+       - filter: Gaussian Thinning
+         filter variables:
+         - name: brightnessTemperature
+           channels: *abi_g18_channels
+         #horizontal_mesh: 145
+         horizontal_mesh: 60
+         use_reduced_horizontal_grid: true
+         # Geographic Consistency Parameters
+         round_horizontal_bin_count_to_nearest: true
+         partition_longitude_bins_using_mesh: true
+         # Spatiotemporal Selection
+         distance_norm: maximum
+         #distance_norm: geodesic
+         seed_time: '@analysisDate@'
+         time_mesh: '@THINNING_TIME_MESH@'
+         time_min: '@THINNING_TIME_MIN@'
+         time_max: '@THINNING_TIME_MAX@'
+         priority_variable: DerivedMetaData/thinning_priority
+         #priority_variable: MetaData/cloudFree
+         actions:
+         - name: set
+           flag: Thinning
+           ignore: rejected observations
+         - name: reduce obs space
+         #- name: reject
+
+       # ---------------------------------------
+       # Observation prior Filters (steps 7-9)
+       # ----------------------------------------
        obs prior filters:
-       # Initial obs error assignment
+       # ------------------------------------
+       # Step 7 : Initial obs erro assignment
+       # -----------------------------------
        - filter: Perform Action
          filter variables:
          - name: brightnessTemperature
@@ -18723,7 +20061,14 @@ cost function:
            name: assign error
            error parameter vector: *abi_g18_error
 
-       # Surface flag assignment from geoval
+       # --------------------------------------------------------
+       # Step 8 : Create surface flag assignment from Geovals
+       # water:0
+       # land: 1
+       # ice:  2
+       # Snow: 3
+       # Mixed/Other: 4.
+       # ----------------------------------------------------------
        - filter: Variable Assignment
          assignments:
          - name: DerivedMetaData/surfaceFlag
@@ -18755,7 +20100,9 @@ cost function:
                    minvalue: 0.99
                  value: 3
 
-       # Surface Parameter assignment from geovals
+       # --------------------------------------------------------
+       # Step 9: Surface Parameter assignment from geovals
+       # ----------------------------------------------------------
        - filter: Variable Assignment
          assignments:
          - name: DerivedMetaData/surfaceParam
@@ -18787,8 +20134,14 @@ cost function:
                    minvalue: 0.99
                  value: 15
 
+
+       # ----------------------------------------
+       # Observation post Filters (steps 10-20)
+       # ----------------------------------------
        obs post filters:
-       # Regional domain check to remove data outside of model domain
+       # ----------------------------------------------------------------------------------------
+       # Step 10: online geo-domain Check, rejecting observations outside of regional MPAS domain
+       # ----------------------------------------------------------------------------------------
        - filter: Bounds Check
          filter variables:
          - name: brightnessTemperature
@@ -18798,15 +20151,22 @@ cost function:
            flag all filter variables if any test variable is out of bounds: true
            minvalue: 0.0
            maxvalue: 0.5
+         actions:
+           - name: set
+             flag: GeoDomainCheck
+           - name: reject
 
+       # ---------------------------------------------------------------------------------------------------
+       # Step 11 :  hofx/BT range check (sanity check)
        # Toss data if the hofx is missing or outside of range
+       # ----------------------------------------------------------------------------------------------------
        - filter: Domain Check
          filter variables:
          - name: brightnessTemperature
            channels: *abi_g18_channels
          where:
          - variable:
-             name: brightnessTemperature@HofX
+             name: HofX/brightnessTemperature
              channels: *abi_g18_channels
            value: is_valid
            minvalue: 50.00001
@@ -18814,8 +20174,10 @@ cost function:
          action:
            name: reject
 
-       # Surface type check
-       # Toss channels 7,11-16 over land
+       # -----------------------------------------------------
+       # Step 12 :  Surface type check
+       # Step 12a: Toss all channels 7, 11-16  data over land
+       # ------------------------------------------------------
        - filter: RejectList
          filter variables:
          - name: brightnessTemperature
@@ -18825,7 +20187,9 @@ cost function:
              name: GeoVaLs/land_area_fraction
            minvalue: 0.99
 
-       # Toss all channels data over snow
+       # -------------------------------------------
+       # Setp 12b: Toss all channels data over snow
+       # --------------------------------------------
        - filter: RejectList
          filter variables:
          - name: brightnessTemperature
@@ -18835,7 +20199,9 @@ cost function:
              name: GeoVaLs/surface_snow_area_fraction
            minvalue: 0.99
 
-       # Toss all channels data over ice
+       # ---------------------------------------------------------------------------------
+       # Step 12c: Toss all channels data over ice (reject if ice_area_fraction>=0.99)
+       # ---------------------------------------------------------------------------------
        - filter: RejectList
          filter variables:
          - name: brightnessTemperature
@@ -18845,7 +20211,9 @@ cost function:
              name: GeoVaLs/ice_area_fraction
            minvalue: 0.99
 
-       # Toss all channels data over mixed surface
+       # --------------------------------------------------------
+       # Step 12d:  Toss all channels data over mixed surface
+       # --------------------------------------------------------
        - filter: RejectList
          filter variables:
          - name: brightnessTemperature
@@ -18868,17 +20236,11 @@ cost function:
            maxvalue: 0.99
            max_exclusive: true
 
-       # BT range check
-       - filter: Bounds Check
-         filter variables:
-         - name: brightnessTemperature
-           channels: *abi_g18_channels
-         minvalue: 0.0
-         maxvalue: 1000.0
-         action:
-           name: reject
 
-       # Model top transmittance check
+       # -----------------------------------------------------------------------------------------------------------------------------------------------
+       # Step 13: Observation Error inflation: Model top Transmittance Check
+       # This obsfunction calculates the observation error inflation factor for satellite radiances as a function of model top-to-space transmittance.
+       # ------------------------------------------------------------------------------------------------------------------------------------------------
        - filter: Perform Action
          filter variables:
          - name: brightnessTemperature
@@ -18891,7 +20253,9 @@ cost function:
              options:
                channels: *abi_g18_channels
 
-       # Cloud detection
+       # --------------------------------------------------
+       # Step 14:  MinResidual Cloud Detection Check
+       # ---------------------------------------------------
        - filter: Bounds Check
          filter variables:
          - name: brightnessTemperature
@@ -18906,10 +20270,16 @@ cost function:
              obserr_dtempf: [0.5, 2.0, 4.0, 2.0, 4.0]
              error parameter vector: *abi_g18_error
          maxvalue: 1.0e-12
-         action:
-           name: reject
+         actions:
+           - name: set
+             flag: CloudDetectMinResidualIR
+             ignore: rejected observations
+           - name: reject
 
-       # Scene Consistency Check based on ch13 (10.8 micron)
+       # ---------------------------------------------------------------------------------------------------------------------
+       # Step 15: Second StdDev check: Scene Consistency Check based on StdDev of ch13 (10.8 micron) for chanenel 7, 10-16
+       # This step would remove more data for channel 10
+       # ---------------------------------------------------------------------------------------------------------------------
        - filter: Domain Check
          filter variables:
          - name: brightnessTemperature
@@ -18920,15 +20290,23 @@ cost function:
              channels: 13
            maxvalue: 0.5
            max_exclusive: true
+         actions:
+           - name: set
+             flag: ClearSkyStdCheck_channel_10
+             ignore: rejected observations
+           - name: reject
 
-       # Aadjust Channels 8-10 varinv according to ch8 BT standard deviation
+       # -------------------------------------------------------------------------------------------------------------
+       # Step 16: Observation Error inflation: adjust error for channels 8-10 according to ch8 BT standard deviation
+       # --------------------------------------------------------------------------------------------------------------
        - filter: Perform Action
          filter variables:
          - name: brightnessTemperature
            channels: 8-10
          where:
          - variable:
-             name: ClearSkyStdDev/brightnessTemperature_8
+             name: ClearSkyStdDev/brightnessTemperature
+             channels: 8
            maxvalue: 0.5
            minvalue: 0.4
            min_exclusive: true
@@ -18942,7 +20320,8 @@ cost function:
            channels: 8-10
          where:
          - variable:
-             name: ClearSkyStdDev/brightnessTemperature_8
+             name: ClearSkyStdDev/brightnessTemperature
+             channels: 8
            maxvalue: 0.6
            #max_exclusive: true
            minvalue: 0.5
@@ -18957,7 +20336,8 @@ cost function:
            channels: 8-10
          where:
          - variable:
-             name: ClearSkyStdDev/brightnessTemperature_8
+             name: ClearSkyStdDev/brightnessTemperature
+             channels: 8
            maxvalue: 0.7
            #max_exclusive: true
            minvalue: 0.6
@@ -18972,14 +20352,20 @@ cost function:
            channels: 8-10
          where:
          - variable:
-             name: ClearSkyStdDev/brightnessTemperature_8
+             name: ClearSkyStdDev/brightnessTemperature
+             channels: 8
            minvalue: 0.7
            min_exclusive: true
          action:
            name: inflate error
            inflation factor: 1.5199
 
-       # Near SST Check
+       # -------------------------------------------------------------------------------------------------------------------------------------------------------
+       # Step 17: NSST Retrieval Check
+       # This obsFunction is designed to perform QC using retrieved near-sea-surface temperature (NSST) from Infrared radiances.
+       # The output of this obsFunction is the default JEDI QC flags: 0 = channel is retained for assimilation; 1 = channel is not retained for assimilation.
+       # The brightness_temperature is rejected if the QC flags from this ObsFunction output value is bigger than maxvalue=1.0e-12.
+       # ---------------------------------------------------------------------------------------------------------------------------------------------------------
        - filter: Bounds Check
          filter variables:
          - name: brightnessTemperature
@@ -18990,11 +20376,21 @@ cost function:
            options:
              channels: *abi_g18_channels
              use_flag: *abi_g18_use_flag
+             sensor: abi_g18
+             obserr_demisf: [0.01, 0.02, 0.03, 0.02, 0.03]
+             obserr_dtempf: [0.50, 2.00, 4.00, 2.00, 4.00]
          maxvalue: 1.0e-12
-         action:
-           name: reject
+         actions:
+           - name: set
+             flag: NearSSTRetCheckIR
+             ignore: rejected observations
+           - name: reject
 
-       # Surface Jacobian
+       # ----------------------------------------------------------------------------------------------------------
+       # Step 18: Error inflation: Surface Jacobians Check
+       # This obsFunction is designed to compute observation error inflation factor for brightness temperature as
+       # a function of weighted surface temperature jacobian and surface emissivity jacobian.
+       # -----------------------------------------------------------------------------------------------------------
        - filter: Perform Action
          filter variables:
          - name: brightnessTemperature
@@ -19006,11 +20402,15 @@ cost function:
              channels: *abi_g18_channels
              options:
                channels: *abi_g18_channels
-               sensor: abi_g18
                obserr_demisf: [0.01, 0.02, 0.03, 0.02, 0.03]
                obserr_dtempf: [0.5, 2.0, 4.0, 2.0, 4.0]
+               sensor: abi_g18
 
-       # Channels 7, 10-16 Cloud fraction >2
+       # ----------------------------------------------------------------------------------------------------------
+       # Step 19: additional cloud fraction check for channels 7, 10-16
+       # remove when cloud fraction > 2
+       # this step would remove more data from channel 8
+       # -----------------------------------------------------------------------------------------------------------
        - filter: Domain Check
          filter variables:
          - name: brightnessTemperature
@@ -19019,11 +20419,19 @@ cost function:
          - variable:
              name: MetaData/cloudAmount
            maxvalue: 2
+         actions:
+         - name: set
+           flag: CloudFractionCheck_channel_10
+           ignore: rejected observations
+         - name: reject
 
-       # Variable assignment, OmF non bias corrected
+       # ----------------------------------------------------------------------------------------------------------
+       # Step 20: split window check for channels 7, 10-16
+       # Step 20a: Variable assignment, OmF non bias corrected
+       # -----------------------------------------------------------------------------------------------------------
        - filter: Variable Assignment
          assignments:
-         - name: OmFNBC@DerivedMetaData
+         - name: DerivedMetaData/OmFNBC
            type: float
            function:
              name: ObsFunction/Arithmetic
@@ -19043,19 +20451,28 @@ cost function:
                  channels: 14
                coefs: [1, -1, 1, -1, 1, -1]
 
-       # Use split window chns to remove opaque clouds
-       # Toss Channels 7, 10-16, when OmFNBC < -0.75
-       - filter: Domain Check
+       # ----------------------------------------------------------------------------------------------------------------
+       # Step 20b: Use split window chns to remove opaque clouds
+       #           reject observatiohs for Channels 7, 10-16, when OmFNBC =< -0.75 min_exclusive:true is uesed to reject
+       #           min_exclusive:true is uesed to reject when omFNBC= -0.75
+       # ------------------------------------------------------------------------------------------------------------------
+       - filter: Bounds Check
          filter variables:
          - name: brightnessTemperature
            channels: 7, 10-16
-         where:
-         - variable:
-             name: OmFNBC@DerivedMetaData
-           minvalue: -0.75
-           max_exclusive: true
+         test variables:
+         - name: DerivedMetaData/OmFNBC
+         minvalue: -0.75
+         min_exclusive: true
+         actions:
+           - name: set
+             flag: SplitWindowCheck_channel_10
+             ignore: rejected observations
+           - name: reject
 
-       # Final gross check
+       # ----------------------------------
+       # Step 21: Gross check
+       # ----------------------------------
        - filter: Background Check
          filter variables:
          - name: brightnessTemperature
@@ -19069,7 +20486,8 @@ cost function:
              obserr_bound_latitude:
                name: ObsFunction/ObsErrorFactorLatRad
                options:
-                 latitude_parameters: [0.0, 0.0, 0.0, 0.0]
+                 #latitude_parameters: [0.0, 0.0, 0.0, 0.0]
+                 latitude_parameters: [25.0, 0.5, 0.04, 1.0]
              obserr_bound_transmittop:
                name: ObsFunction/ObsErrorFactorTransmitTopRad
                channels: *abi_g18_channels
@@ -19077,8 +20495,32 @@ cost function:
                  channels: *abi_g18_channels
              obserr_bound_max: *abi_g18_obserr_bound_max
              error parameter vector: *abi_g18_error
-         action:
-           name: reject
+         actions:
+           - name: set
+             flag: GrossCheck
+             ignore: rejected observations
+           - name: reject
+
+       # -------------------------------
+       # Step 22: Useflag Check
+       # -------------------------------
+       - filter: Bounds Check
+         filter variables:
+         - name: brightnessTemperature
+           channels: *abi_g18_channels
+         test variables:
+         - name: ObsFunction/ChannelUseflagCheckRad
+           channels: *abi_g18_channels
+           options:
+             channels: *abi_g18_channels
+             use_flag: *abi_g18_use_flag
+         minvalue: 1.0e-12
+         actions:
+           - name: set
+             flag: UseflagCheck
+             ignore: rejected observations
+           - name: reject
+
      - obs space:
          name: atms_n21
          _anchor_channels: &atms_n21_channels 1-22

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-declare -rx PS4='+ $(basename ${BASH_SOURCE[0]:-${FUNCNAME[0]:-"Unknown"}})[${LINENO}]: '
+declare -rx PS4='+${SECONDS}s $(basename ${BASH_SOURCE[0]:-${FUNCNAME[0]:-"Unknown"}})[${LINENO}]: '
 set -x
 date
 #
@@ -38,7 +38,7 @@ mkdir -p "${DATA}"
 # Define COM directories
 #-----------------------------------------------------------------------
 #
-export COMINrrfs=${COMINrrfs:-$(compath.py "$envir/rrfs/$rrfs_ver")}
+export COMINrrfs=${COMINrrfs:-$(compath.py "${envir}/rrfs/${rrfs_ver}")}
 export COMOUT=${COMOUT:-$(compath.py -o "${NET}/${rrfs_ver}/${RUN}.${PDY}/${cyc}")}
 #
 #----------------------------------------
